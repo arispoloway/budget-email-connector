@@ -1,0 +1,30 @@
+{
+  "email": {
+    "type": "gmail",
+    "credentialsJsonPath": "./credentials.json",
+    "tokenJsonPath": "./token.json",
+    "label": "budget"
+  },
+  "parser": {
+    "type": "email_router",
+    "routes": [
+      {
+        "emails": ["paylah.alert@dbs.com", "ibanking.alert@dbs.com"],
+        "parser": {
+          "type": "dbs",
+          "accountId": "<FILL ME IN>"
+        }
+      }
+    ]
+  },
+  "notifier": {
+    "type": "discord",
+    "webhookUrl": "<FILL ME IN>"
+  },
+  "destination": {
+    "type": "actual_budget",
+    "url": "http://localhost:5006",
+    "password": "<FILL ME IN>",
+    "syncId": "<FILL ME IN>"
+  }
+}

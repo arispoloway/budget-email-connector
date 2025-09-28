@@ -85,8 +85,6 @@ export class DBSTransactionParser {
     if (!match)
       return parseError("Could not extract basic information from email body");
 
-    console.log(email.body);
-
     const [, amountStr, transferType, dateStr] = match;
 
     const date = parseDate(dateStr);

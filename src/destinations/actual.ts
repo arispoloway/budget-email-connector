@@ -51,7 +51,6 @@ export class ActualClient {
       }
       transactionsByAccount[t.accountId].push(t);
     });
-    console.log(transactions.map(mapTransaction));
 
     return Promise.all(
       Object.entries(transactionsByAccount).map(([accountId, ts], _) =>

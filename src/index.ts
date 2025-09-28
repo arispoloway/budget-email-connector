@@ -1,59 +1,18 @@
 import "dotenv/config";
-import { authorize } from "./email/clients/gmail/auth";
-import { listUnprocessedMessages } from "./email/clients/gmail/client";
-import { ActualClient } from "./destinations/actual";
-import { EmailStore } from "./email/store";
-import { DiscordNotifier } from "./notifiers/discord";
-import { RoutingTransactionParser } from "./email/parsers/routing_transaction_parser";
-import { DBSTransactionParser } from "./email/parsers/dbs";
-import { createParserFromConfig, ParserConfig } from "./email/parsers/config";
-import { ParseResult } from "./email/parsers/parser";
-import { InitConfig } from "@actual-app/api/@types/loot-core/src/server/main";
-import { Destination } from "./destinations/destination";
-import { parseConfig, parseConfigFromFile } from "./config";
+import { parseConfigFromFile } from "./config";
+import { Runner } from "./runner";
 
 async function main() {
   // TODO: specify config location, also better config validation and errors
-  const { notifier, parser, destination } =
-    await parseConfigFromFile("./config.json");
+  const config = await parseConfigFromFile("./config.json");
+
+  const runner = new Runner(config);
+  await runner.init();
 
   try {
-    const auth = await authorize();
-    const store = new EmailStore("./emails.sqlite"); // TODO: configurable
-    await destination.init();
-
-    const emails = await listUnprocessedMessages(auth, store, "budget"); // TODO: configurable
-    for (const email of emails) {
-      const ts = parser.parseTransactionEmail(email);
-      switch (ts.result) {
-        case ParseResult.SUCCESS:
-          await destination.importTransactions(ts.transactions);
-          const transactionStr = ts.transactions
-            .map((t) => `- ${t.payee}: (${t.amount.toFixed(2)})`)
-            .join("\n");
-          await notifier.info(
-            `Successfully imported transactions from [email](${email.link}):\n${transactionStr}`,
-          );
-          await store.markEmailSeen(email.id);
-          break;
-        case ParseResult.SKIPPED:
-          await notifier.info(
-            `Skipped [email](${email.link}) from '${email.from}' with subject '${email.subject}'\n'${ts.error}'`,
-          );
-          await store.markEmailSeen(email.id);
-          break;
-        case ParseResult.ERROR:
-          await notifier.err(
-            `Error while parsing transaction [email](${email.link}):\n${ts.error}`,
-          );
-          break;
-      }
-    }
-  } catch (e: any) {
-    notifier.err("Error processing transaction emails: " + e.toString());
+    await runner.runRepeatedly(10 * 60 * 1000); // every 10 mins. TODO: configurable
   } finally {
-    // TODO: some nice generic way to handle shutdown. Actual is just a bit of a special snowflake here
-    if (destination) await destination.shutdown();
+    await config.destination.shutdown();
   }
 }
 
