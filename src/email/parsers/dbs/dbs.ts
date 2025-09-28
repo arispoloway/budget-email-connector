@@ -1,27 +1,18 @@
-import { Email } from "../clients/types";
+import { Email } from "../../clients/types";
 import {
   parseError,
   ParseResult,
   parseSkipped,
   parseSuccess,
   TransactionParseResult,
-} from "./parser";
+} from "../parser";
 import {
   extractStrongField,
   parseCurrencyAmount,
   parseDate,
+  parseTransactionId,
   TableParser,
 } from "./utils";
-
-function parseTransactionId(html: string): string | undefined {
-  const regex = />\s*Transaction Ref:\s*(.*?)\s*<\//i;
-  const match = html.match(regex);
-
-  if (match) {
-    const transactionRef = match[1];
-    return transactionRef;
-  }
-}
 
 export class DBSTransactionParser {
   private accountId: string;

@@ -123,3 +123,13 @@ export function extractStrongField(
   const match = html.match(regex);
   return match ? match[1].trim() : null;
 }
+
+export function parseTransactionId(html: string): string | undefined {
+  const regex = />\s*Transaction Ref:\s*(.*?)\s*<\//i;
+  const match = html.match(regex);
+
+  if (match) {
+    const transactionRef = match[1];
+    return transactionRef;
+  }
+}

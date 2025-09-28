@@ -1,4 +1,4 @@
-import { DBSTransactionParser } from "./dbs";
+import { DBSTransactionParser } from "./dbs/dbs";
 import { TransactionParser } from "./parser";
 import { RoutingTransactionParser } from "./routing_transaction_parser";
 
