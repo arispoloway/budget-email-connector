@@ -8,6 +8,7 @@ export interface ActualBudgetDestinationConfig {
   password: string;
   url: string;
   syncId: string;
+  noteSuffix?: string;
 }
 
 export function createDestinationFromConfig(
@@ -22,6 +23,7 @@ export function createDestinationFromConfig(
           dataDir: "./tmp/actual",
         },
         config.syncId,
+        config.noteSuffix,
       );
     default:
       throw new Error(`Unknown destination type: ${(config as any).type}`);

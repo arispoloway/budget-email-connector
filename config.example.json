@@ -26,6 +26,7 @@
     "type": "actual_budget",
     "url": "http://localhost:5006",
     "password": "<FILL ME IN>",
-    "syncId": "<FILL ME IN>"
+    "syncId": "<FILL ME IN>",
+    "noteSuffix": " #email-connector"
   }
 }

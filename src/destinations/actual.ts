@@ -6,13 +6,16 @@ import { ReconcileTransactionsResult } from "@actual-app/api/@types/loot-core/sr
 import { ImportTransactionResult } from "./destination";
 import { promises as fs } from "fs";
 
-function mapTransaction(transaction: Transaction): ImportTransactionEntity {
+function mapTransaction(
+  transaction: Transaction,
+  noteSuffix: string,
+): ImportTransactionEntity {
   return {
     account: transaction.accountId,
     date: transaction.date.toISOString().substring(0, 10),
     amount: 100 * transaction.amount, // Expected in cents
     payee_name: transaction.payee,
-    notes: transaction.notes,
+    notes: transaction.notes + noteSuffix,
     imported_id: transaction.importId,
     cleared: true,
   };
@@ -21,10 +24,16 @@ function mapTransaction(transaction: Transaction): ImportTransactionEntity {
 export class ActualClient {
   private config: InitConfig;
   private syncId: string;
+  private noteSuffix: string | undefined;
 
-  constructor(config: InitConfig, syncId: string) {
+  constructor(
+    config: InitConfig,
+    syncId: string,
+    noteSuffix: string | undefined,
+  ) {
     this.config = config;
     this.syncId = syncId;
+    this.noteSuffix = noteSuffix;
   }
 
   async init(): Promise<void> {
@@ -54,7 +63,10 @@ export class ActualClient {
 
     return Promise.all(
       Object.entries(transactionsByAccount).map(([accountId, ts], _) =>
-        Actual.importTransactions(accountId, ts.map(mapTransaction)),
+        Actual.importTransactions(
+          accountId,
+          ts.map((t) => mapTransaction(t, this.noteSuffix || "")),
+        ),
       ),
     );
   }
