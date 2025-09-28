@@ -76,7 +76,7 @@ export function parseDate(input: string, now: Date = new Date()): Date | null {
   const zoneAbbr = parts[parts.length - 1];
   const zone = ZONE_MAP[zoneAbbr];
   if (!zone) {
-    throw new Error(`Unknown timezone: ${zoneAbbr}`);
+    return null;
   }
 
   const datePart = parts.slice(0, -1).join(" ");
