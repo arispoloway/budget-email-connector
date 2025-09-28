@@ -14,7 +14,7 @@ export async function listUnprocessedMessages(auth: any, store: EmailStore, labe
   const res = await gmail.users.messages.list({
     userId: "me",
     q: `label:${label}`,
-    maxResults: 10,
+    maxResults: 10, // TODO: ideally this would be able to iterate through if there are more than this many transactions
   });
 
   if (!res.data.messages || res.data.messages.length === 0) {

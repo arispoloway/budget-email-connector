@@ -8,49 +8,37 @@ import { RoutingTransactionParser } from "./email/parsers/routing_transaction_pa
 import { PaylahTransactionParser } from "./email/parsers/dbs";
 import { createParserFromConfig, ParserConfig } from "./email/parsers/config";
 import { ParseResult } from "./email/parsers/parser";
+import { InitConfig } from "@actual-app/api/@types/loot-core/src/server/main";
+import { Destination } from "./destinations/destination";
+import { parseConfig, parseConfigFromFile } from "./config";
 
-
-// TODO: better config management
-const LABEL = 'budget';
-const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK;
-const PARSER_CONFIG: ParserConfig = {
-  type: "email_router",
-  routes: [
-    { emails: ["paylah.alert@dbs.com"], 
-      parser: {
-        type: "paylah",
-        accountId: process.env.PAYLAH_ACCOUNT_ID!
-      }}
-  ]
-};
 
 async function main() {
-  if (!process.env.DISCORD_WEBHOOK) {
-    throw new Error("No discord webhook provided!")
-  }
-  const notifier = new DiscordNotifier(DISCORD_WEBHOOK_URL!);
+ // TODO: specify config location, also better config validation and errors
+  const { notifier, parser, destination } = await parseConfigFromFile("./config.json");
 
   try {
     const auth = await authorize();
-    const store = new EmailStore("./emails.sqlite");
-    const emails = await listUnprocessedMessages(auth, store, LABEL);
+    const store = new EmailStore("./emails.sqlite"); // TODO: configurable
+    await destination.init();
 
-    const parser = createParserFromConfig(PARSER_CONFIG);
-    const destination = new ActualClient()
-
+    const emails = await listUnprocessedMessages(auth, store, 'budget'); // TODO: configurable
     for (const email of emails) {
-      // TODO: catch errors here and do stuff with them
       const ts = parser.parseTransactionEmail(email)
       if (ts.result == ParseResult.SUCCESS) {
         await destination.importTransactions(ts.transactions);
-        // TODO: store in db
+        await store.markEmailSeen(email.id);
+        const transactionStr = ts.transactions.map(t => `- ${t.payee}: (${t.amount.toFixed(2)})`).join("\n")
+        await notifier.info(`Successfully imported transactions:\n${transactionStr}\nSource: ${email.link}`)
       } else {
-        // TODO: something smarter
-        console.log("Errors while parsing, ...");
+        await notifier.err(`Error while parsing transaction email: ${email.id} (${email.link})`);
       }
     }
   } catch (e: any) {
-    notifier.err("Could not process emails: " + e.toString())
+    notifier.err("Error processing transaction emails: " + e.toString())
+  } finally {
+    // TODO: some nice generic way to handle shutdown. Actual is just a bit of a special snowflake here
+    if (destination) await destination.shutdown();
   }
 }
 

@@ -96,7 +96,7 @@ export class PaylahTransactionParser {
             importId: email.id,
             date: date,
             description: `Paylah Transaction from ${from} to ${to}`,
-            amount: amount,
+            amount: -amount, // TODO: Figure out inflow or outflow from the email
             payee: to,
             notes: notes,
         }])
