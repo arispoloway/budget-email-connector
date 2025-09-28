@@ -1,4 +1,5 @@
 {
+  "emailStorePath": "./emails.sqlite",
   "email": {
     "type": "gmail",
     "credentialsJsonPath": "./credentials.json",

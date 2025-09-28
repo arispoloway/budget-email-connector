@@ -10,11 +10,13 @@ import {
 import { EmailClient } from "./email/clients/types";
 import { createParserFromConfig, ParserConfig } from "./email/parsers/config";
 import { TransactionParser } from "./email/parsers/parser";
+import { EmailStore } from "./email/store";
 import { createNotifierFromConfig, NotifierConfig } from "./notifiers/config";
 import { Notifier } from "./notifiers/notifier";
 import { promises as fs } from "fs";
 
 export type ParsedConfig = {
+  emailStore: EmailStore;
   email: EmailClient;
   destination: Destination;
   parser: TransactionParser;
@@ -23,6 +25,7 @@ export type ParsedConfig = {
 
 // TODO: configurable email client
 export type Config = {
+  emailStorePath: string;
   email: EmailClientConfig;
   destination: DestinationConfig;
   parser: ParserConfig;
@@ -31,6 +34,7 @@ export type Config = {
 
 export function parseConfig(config: Config): ParsedConfig {
   return {
+    emailStore: new EmailStore(config.emailStorePath),
     email: createEmailClientFromConfig(config.email),
     destination: createDestinationFromConfig(config.destination),
     parser: createParserFromConfig(config.parser),

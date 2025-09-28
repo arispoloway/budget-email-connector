@@ -22,7 +22,7 @@ export class Runner {
     this.destination = config.destination;
     this.notifier = config.notifier;
     this.email = config.email;
-    this.store = new EmailStore("./emails.sqlite"); // TODO: configurable
+    this.store = config.emailStore;
   }
 
   async init() {
