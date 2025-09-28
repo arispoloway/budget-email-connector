@@ -9,19 +9,21 @@ export class DiscordNotifier {
     const res = await fetch(this.webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: message }),
+      body: JSON.stringify({ content: message, flags: 4 }),
     });
 
     if (!res.ok) {
-      throw new Error(`Failed to send Discord message: ${res.status} ${res.statusText}`);
+      throw new Error(
+        `Failed to send Discord message: ${res.status} ${res.statusText}`,
+      );
     }
   }
 
   async info(message: string): Promise<void> {
-    return this.send(message)
+    return this.send(message);
   }
 
   async err(message: string): Promise<void> {
-    return this.send(message)
+    return this.send(message);
   }
 }

@@ -5,4 +5,4 @@ export type Email = {
   body: string;
   date?: Date;
   link?: string;
-}
+};

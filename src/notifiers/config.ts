@@ -9,10 +9,10 @@ export interface DiscordNotifierConfig {
 }
 
 export function createNotifierFromConfig(config: NotifierConfig): Notifier {
-    switch (config.type) {
-        case "discord":
-            return new DiscordNotifier(config.webhookUrl)
-        default:
-            throw new Error(`Unknown destination type: ${(config as any).type}`);
-    }
+  switch (config.type) {
+    case "discord":
+      return new DiscordNotifier(config.webhookUrl);
+    default:
+      throw new Error(`Unknown destination type: ${(config as any).type}`);
+  }
 }

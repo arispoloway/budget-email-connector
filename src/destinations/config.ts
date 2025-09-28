@@ -10,15 +10,20 @@ export interface ActualBudgetDestinationConfig {
   syncId: string;
 }
 
-export function createDestinationFromConfig(config: DestinationConfig): Destination {
-    switch (config.type) {
-        case "actual_budget":
-            return new ActualClient({
-                password: config.password,
-                serverURL: config.url,
-                dataDir: './tmp/actual',
-            }, config.syncId)
-        default:
-            throw new Error(`Unknown destination type: ${(config as any).type}`);
-    }
+export function createDestinationFromConfig(
+  config: DestinationConfig,
+): Destination {
+  switch (config.type) {
+    case "actual_budget":
+      return new ActualClient(
+        {
+          password: config.password,
+          serverURL: config.url,
+          dataDir: "./tmp/actual",
+        },
+        config.syncId,
+      );
+    default:
+      throw new Error(`Unknown destination type: ${(config as any).type}`);
+  }
 }

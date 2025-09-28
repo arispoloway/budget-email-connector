@@ -1,104 +1,145 @@
-import { table } from "console";
 import { Email } from "../clients/types";
-import { parseError, ParseResult, parseSuccess, TransactionParseResult } from "./parser";
-import { parseCurrencyAmount, TableParser } from "./utils";
-
-import { DateTime } from "luxon";
-
-// Mapping of common abbreviations to IANA time zones
-const TZ_MAP: Record<string, string> = {
-  SGT: "Asia/Singapore",
-  JST: "Asia/Tokyo",
-  PST: "America/Los_Angeles",
-  EST: "America/New_York",
-  UTC: "UTC",
-  // add more as needed
-};
-
-function parseDate(input: string): Date | null {
-  // Extract day, month, time, and optional TZ
-  const match = input.match(/(\d{1,2}) (\w{3}) (\d{2}:\d{2})(?: \((\w+)\))?/);
-  if (!match) return null;
-
-  const [, dayStr, monthStr, timeStr, tzAbbr] = match;
-  const day = parseInt(dayStr, 10);
-  const month = monthStr;
-  const [hourStr, minuteStr] = timeStr.split(":");
-  const hour = parseInt(hourStr, 10);
-  const minute = parseInt(minuteStr, 10);
-
-  const now = DateTime.local();
-  const year = now.year;
-
-  const zone = tzAbbr && TZ_MAP[tzAbbr.toUpperCase()] ? TZ_MAP[tzAbbr.toUpperCase()] : "UTC";
-
-  const dt = DateTime.fromObject(
-    { year, month: DateTime.fromFormat(month, "LLL").month, day, hour, minute },
-    { zone }
-  );
-
-  // If the resulting datetime is in the future, assume it was last year
-  if (dt > now) {
-    return dt.minus({ years: 1 }).toJSDate();
-  }
-
-  return dt.toJSDate();
-}
+import {
+  parseError,
+  ParseResult,
+  parseSkipped,
+  parseSuccess,
+  TransactionParseResult,
+} from "./parser";
+import {
+  extractStrongField,
+  parseCurrencyAmount,
+  parseDate,
+  TableParser,
+} from "./utils";
 
 function parseTransactionId(html: string): string | undefined {
-    const regex = />\s*Transaction Ref:\s*(.*?)\s*<\//i;
-    const match = html.match(regex);
+  const regex = />\s*Transaction Ref:\s*(.*?)\s*<\//i;
+  const match = html.match(regex);
 
-    if (match) {
-        const transactionRef = match[1];
-        return transactionRef
-    }
+  if (match) {
+    const transactionRef = match[1];
+    return transactionRef;
+  }
 }
 
-export class PaylahTransactionParser {
-    private accountId: string;
+export class DBSTransactionParser {
+  private accountId: string;
 
-    constructor(accountId: string) {
-        if (!accountId) {
-            throw new Error("Invalid account id provided")
-        }
-        this.accountId = accountId;
+  constructor(accountId: string) {
+    if (!accountId) {
+      throw new Error("Invalid account id provided");
     }
+    this.accountId = accountId;
+  }
 
-    parseTransactionEmail(email: Email): TransactionParseResult {
-        const tableParser = new TableParser(email.body);
-        const to = tableParser.findValue("To:")
-        if (!to) return parseError("Could not identify 'to' field from email");
+  private parseSentTransaction(
+    email: Email,
+    type: string,
+  ): TransactionParseResult {
+    const tableParser = new TableParser(email.body);
+    const to = tableParser.findValue("To:");
+    if (!to) return parseError("Could not identify 'to' field from email");
 
-        const from = tableParser.findValue("From:")
-        if (!from) return parseError("Could not identify 'from' field from email");
+    const from = tableParser.findValue("From:");
+    if (!from) return parseError("Could not identify 'from' field from email");
 
-        const dateTime = tableParser.findValue("Date & Time:")
-        if (!dateTime) return parseError("Could not identify 'date' field from email");
-        const date = parseDate(dateTime);
-        if (!date) return parseError(`Could not parse date from '${dateTime}'`);
-        
-        const amountText = tableParser.findValue("Amount:");
-        if (!amountText) return parseError("Could not identify 'amount' field from email");
-        const amount = parseCurrencyAmount(amountText!)?.amount;
-        if (!amount) return parseError(`Could not parse amount from '${amountText}'`);
+    const dateTime = tableParser.findValue("Date & Time:");
+    if (!dateTime)
+      return parseError("Could not identify 'date' field from email");
+    const date = parseDate(dateTime);
+    if (!date) return parseError(`Could not parse date from '${dateTime}'`);
 
-        let noteItems: string[] = [];
+    const amountText = tableParser.findValue("Amount:");
+    if (!amountText)
+      return parseError("Could not identify 'amount' field from email");
+    const amount = parseCurrencyAmount(amountText!)?.amount;
+    if (!amount)
+      return parseError(`Could not parse amount from '${amountText}'`);
 
-        const originalTransactionId = parseTransactionId(email.body);
-        if (originalTransactionId) noteItems.push(`Transaction ID: ${originalTransactionId}`);
-        if (email.link) noteItems.push(`Link: ${email.link}`);
+    let noteItems: string[] = [`${type} Sent from ${from} to ${to}`];
 
-        const notes = noteItems ? noteItems.join("\n") : undefined;
+    const originalTransactionId = parseTransactionId(email.body);
+    if (originalTransactionId)
+      noteItems.push(`Transaction ID: ${originalTransactionId}`);
+    if (email.link) noteItems.push(`Link: ${email.link}`);
 
-        return parseSuccess([{
-            accountId: this.accountId,
-            importId: email.id,
-            date: date,
-            description: `Paylah Transaction from ${from} to ${to}`,
-            amount: -amount, // TODO: Figure out inflow or outflow from the email
-            payee: to,
-            notes: notes,
-        }])
+    const notes = noteItems ? noteItems.join("\n") : undefined;
+
+    return parseSuccess([
+      {
+        accountId: this.accountId,
+        importId: email.id,
+        date: date,
+        amount: -amount,
+        payee: to,
+        notes: notes,
+      },
+    ]);
+  }
+
+  private parseReceivedTransaction(email: Email): TransactionParseResult {
+    const regex = /received\s+(.*)\s+via\s+(.+?)\s+on\s+(.*)\./i;
+
+    const match = email.body.match(regex);
+    if (!match)
+      return parseError("Could not extract basic information from email body");
+
+    console.log(email.body);
+
+    const [, amountStr, transferType, dateStr] = match;
+
+    const date = parseDate(dateStr);
+    if (!date) return parseError(`Could not parse date from '${dateStr}'`);
+
+    const amount = parseCurrencyAmount(amountStr!)?.amount;
+    if (!amount)
+      return parseError(`Could not parse amount from '${amountStr}'`);
+
+    const from = extractStrongField(email.body, "From");
+    if (!from) return parseError("Could not identify 'from' field from email");
+
+    const to = extractStrongField(email.body, "To");
+    if (!to) return parseError("Could not identify 'to' field from email");
+
+    let noteItems: string[] = [
+      `${transferType} Received from ${from} to ${to}`,
+    ];
+
+    const originalTransactionId = parseTransactionId(email.body);
+    if (originalTransactionId)
+      noteItems.push(`Transaction ID: ${originalTransactionId}`);
+    if (email.link) noteItems.push(`Link: ${email.link}`);
+
+    const notes = noteItems ? noteItems.join("\n") : undefined;
+
+    return parseSuccess([
+      {
+        accountId: this.accountId,
+        importId: email.id,
+        date: date,
+        amount: amount,
+        payee: from,
+        notes: notes,
+      },
+    ]);
+  }
+
+  parseTransactionEmail(email: Email): TransactionParseResult {
+    if (
+      email.subject === "Transaction Alerts" &&
+      email.from === "paylah.alert@dbs.com"
+    ) {
+      return this.parseSentTransaction(email, "PayLah");
+      // TODO: received paylah transaction
+    } else if (email.subject === "iBanking Alerts") {
+      return this.parseSentTransaction(email, "PayNow/FAST");
+    } else if (
+      email.subject === "digibank Alerts - You've received a transfer"
+    ) {
+      return this.parseReceivedTransaction(email);
+    } else {
+      return parseSkipped("Email did not appear to be a transaction email");
     }
+  }
 }

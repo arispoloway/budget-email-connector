@@ -13,7 +13,7 @@ export async function authorize() {
   const oAuth2Client = new google.auth.OAuth2(
     client_id,
     client_secret,
-    redirect_uris
+    redirect_uris,
   );
 
   // Try to load existing token
@@ -24,7 +24,7 @@ export async function authorize() {
   } catch {
     return getNewToken(oAuth2Client);
   }
-} 
+}
 
 async function getNewToken(oAuth2Client: any) {
   const authUrl = oAuth2Client.generateAuthUrl({

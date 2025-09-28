@@ -11,7 +11,7 @@ export class EmailStore {
       .prepare(
         `CREATE TABLE IF NOT EXISTS seen_emails (
           id TEXT PRIMARY KEY
-        )`
+        )`,
       )
       .run();
   }

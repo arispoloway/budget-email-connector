@@ -1,14 +1,12 @@
-import { PaylahTransactionParser } from "./dbs";
+import { DBSTransactionParser } from "./dbs";
 import { TransactionParser } from "./parser";
 import { RoutingTransactionParser } from "./routing_transaction_parser";
 
 // config.ts
-export type ParserConfig =
-  | PaylahParserConfig
-  | RoutingParserConfig;
+export type ParserConfig = DBSParserConfig | RoutingParserConfig;
 
-export interface PaylahParserConfig {
-  type: "paylah";
+export interface DBSParserConfig {
+  type: "dbs";
   accountId: string;
 }
 
@@ -20,10 +18,12 @@ export interface RoutingParserConfig {
   }[];
 }
 
-export function createParserFromConfig(config: ParserConfig): TransactionParser {
+export function createParserFromConfig(
+  config: ParserConfig,
+): TransactionParser {
   switch (config.type) {
-    case "paylah":
-      return new PaylahTransactionParser((config as PaylahParserConfig).accountId);
+    case "dbs":
+      return new DBSTransactionParser((config as DBSParserConfig).accountId);
 
     case "email_router": {
       const routingConfig = config as RoutingParserConfig;
@@ -41,4 +41,3 @@ export function createParserFromConfig(config: ParserConfig): TransactionParser 
       throw new Error(`Unknown parser type: ${(config as any).type}`);
   }
 }
-
