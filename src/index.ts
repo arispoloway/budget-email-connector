@@ -32,19 +32,19 @@ async function main() {
             .map((t) => `- ${t.payee}: (${t.amount.toFixed(2)})`)
             .join("\n");
           await notifier.info(
-            `Successfully imported transactions:\n${transactionStr}\n[Source](${email.link})`,
+            `Successfully imported transactions from [email](${email.link}):\n${transactionStr}`,
           );
           await store.markEmailSeen(email.id);
           break;
         case ParseResult.SKIPPED:
           await notifier.info(
-            `Skipped email from '${email.from}' with subject '${email.subject}'\n'${ts.error}'\n[Source](${email.link})`,
+            `Skipped [email](${email.link}) from '${email.from}' with subject '${email.subject}'\n'${ts.error}'`,
           );
           await store.markEmailSeen(email.id);
           break;
         case ParseResult.ERROR:
           await notifier.err(
-            `Error while parsing transaction email: [${email.id}](${email.link}):\n${ts.error}`,
+            `Error while parsing transaction [email](${email.link}):\n${ts.error}`,
           );
           break;
       }
