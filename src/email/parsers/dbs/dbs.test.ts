@@ -7,6 +7,7 @@ import {
   TransactionParseResult,
 } from "../parser";
 import { DBSTransactionParser } from "./dbs";
+import Decimal from "decimal.js";
 
 type ParseTest = {
   name: string;
@@ -82,7 +83,7 @@ const EXPECTATIONS: ParseTest[] = [
         accountId: accountId,
         importId: emailId,
         date: new Date("2025-09-24T10:10:00+08:00"),
-        amount: -100.5,
+        amount: new Decimal(-100.5),
         payee: "John Doe",
         notes: "PayLah Sent from Jane Smith to John Doe",
       },
@@ -106,7 +107,7 @@ const EXPECTATIONS: ParseTest[] = [
         accountId: accountId,
         importId: emailId,
         date: new Date("2025-09-26T20:03:00+08:00"),
-        amount: -250.0,
+        amount: new Decimal(-250.0),
         payee: "Alice Johnson",
         notes: "PayNow/FAST Sent from Bob Wilson to Alice Johnson",
       },
@@ -132,7 +133,7 @@ const EXPECTATIONS: ParseTest[] = [
         accountId: accountId,
         importId: emailId,
         date: new Date("2024-09-25T15:30:00+08:00"),
-        amount: 500.75,
+        amount: new Decimal(500.75),
         payee: "Charlie Brown",
         notes:
           "PayNow Received from Charlie Brown to Diana Prince\nTransaction ID: TXN123456789",
@@ -158,7 +159,7 @@ const EXPECTATIONS: ParseTest[] = [
         accountId: accountId,
         importId: emailId,
         date: new Date("2024-09-27T09:15:00+08:00"),
-        amount: 100.0,
+        amount: new Decimal(100.0),
         payee: "Eve Adams",
         notes: "FAST Received from Eve Adams to Frank Miller",
       },
@@ -183,7 +184,7 @@ const EXPECTATIONS: ParseTest[] = [
         accountId: accountId,
         importId: emailId,
         date: new Date("2024-09-28T14:20:00+08:00"),
-        amount: -75.25,
+        amount: new Decimal(-75.25),
         payee: "Grace Lee",
         notes:
           "PayLah Sent from Henry Kim to Grace Lee\nLink: https://dbs.com/transaction/123",
@@ -211,7 +212,7 @@ const EXPECTATIONS: ParseTest[] = [
         accountId: accountId,
         importId: emailId,
         date: new Date("2024-09-29T16:45:00+08:00"),
-        amount: 200.0,
+        amount: new Decimal(200.0),
         payee: "Ivy Chen",
         notes:
           "PayLah Received from Ivy Chen to Jack Wang\nTransaction ID: TXN987654321\nLink: https://dbs.com/received/456",
@@ -236,7 +237,7 @@ const EXPECTATIONS: ParseTest[] = [
         accountId: accountId,
         importId: emailId,
         date: new Date("2024-09-30T11:30:00+08:00"),
-        amount: -100.5,
+        amount: new Decimal(-100.5),
         payee: "Kelly Tan",
         notes: "PayLah Sent from Liam O'Connor to Kelly Tan",
       },
@@ -260,7 +261,7 @@ const EXPECTATIONS: ParseTest[] = [
         accountId: accountId,
         importId: emailId,
         date: new Date("2024-10-01T08:00:00Z"),
-        amount: -150.0,
+        amount: new Decimal(-150.0),
         payee: "Maya Patel",
         notes: "PayNow/FAST Sent from Noah Singh to Maya Patel",
       },
@@ -495,7 +496,7 @@ const EXPECTATIONS: ParseTest[] = [
         accountId: accountId,
         importId: emailId,
         date: new Date("2024-09-25T15:30:00+08:00"),
-        amount: 300.0,
+        amount: new Decimal(300.0),
         payee: "Oliver Queen",
         notes: "FAST Transfer Received from Oliver Queen to Penny Lane",
       },
@@ -519,7 +520,7 @@ const EXPECTATIONS: ParseTest[] = [
         accountId: accountId,
         importId: emailId,
         date: new Date("2024-10-01T12:00:00+08:00"),
-        amount: -10000.99,
+        amount: new Decimal(-10000.99),
         payee: "Quinn Rodriguez",
         notes: "PayNow/FAST Sent from Rachel Green to Quinn Rodriguez",
       },
@@ -544,7 +545,7 @@ const EXPECTATIONS: ParseTest[] = [
         accountId: accountId,
         importId: emailId,
         date: new Date("2024-09-25T15:30:00+08:00"),
-        amount: 0.01,
+        amount: new Decimal(0.01),
         payee: "Sam Wilson",
         notes: "PayNow Received from Sam Wilson to Tony Stark",
       },

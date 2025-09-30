@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio";
+import Decimal from "decimal.js";
 import { DateTime } from "luxon";
 
 export class TableParser {
@@ -28,7 +29,7 @@ export class TableParser {
 
 export function parseCurrencyAmount(
   input: string,
-): { currency: string; amount: number } | null {
+): { currency: string; amount: Decimal } | null {
   // match currency (letters) and amount (number with optional decimals)
   const regex = /([A-Za-z]+)?\s*([0-9]+(?:\.[0-9]+)?)\s*([A-Za-z]+)?/;
   const match = input.trim().match(regex);
@@ -40,10 +41,10 @@ export function parseCurrencyAmount(
   const amountStr = match[2];
   const postCurrency = match[3];
 
-  const amount = parseFloat(amountStr);
+  const amount = new Decimal(amountStr);
   const currency = (preCurrency || postCurrency || "").toUpperCase();
 
-  if (!currency || isNaN(amount)) return null;
+  if (!currency) return null;
 
   return { currency, amount };
 }

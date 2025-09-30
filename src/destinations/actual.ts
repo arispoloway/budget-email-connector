@@ -5,6 +5,7 @@ import { ImportTransactionEntity } from "@actual-app/api/@types/loot-core/src/ty
 import { ReconcileTransactionsResult } from "@actual-app/api/@types/loot-core/src/server/accounts/sync";
 import { ImportTransactionResult } from "./destination";
 import { promises as fs } from "fs";
+import Decimal from "decimal.js";
 
 function mapTransaction(
   transaction: Transaction,
@@ -13,7 +14,7 @@ function mapTransaction(
   return {
     account: transaction.accountId,
     date: transaction.date.toISOString().substring(0, 10),
-    amount: 100 * transaction.amount, // Expected in cents
+    amount: transaction.amount.mul(100).toDecimalPlaces(0).toNumber(), // Expected in cents
     payee_name: transaction.payee,
     notes: transaction.notes + noteSuffix,
     imported_id: transaction.importId,

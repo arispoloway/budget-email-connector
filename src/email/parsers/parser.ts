@@ -1,10 +1,11 @@
+import Decimal from "decimal.js";
 import { Email } from "../clients/types";
 
 export interface Transaction {
   accountId: string;
   importId: string;
   date: Date;
-  amount: number;
+  amount: Decimal;
   payee: string;
   notes?: string;
 }

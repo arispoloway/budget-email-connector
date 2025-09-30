@@ -62,7 +62,7 @@ export class DBSTransactionParser {
         accountId: this.accountId,
         importId: email.id,
         date: date,
-        amount: -amount,
+        amount: amount.mul(-1),
         payee: to,
         notes: notes,
       },

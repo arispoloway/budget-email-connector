@@ -19,6 +19,7 @@
     "@actual-app/api": "^25.9.0",
     "better-sqlite3": "^12.4.1",
     "cheerio": "^1.1.2",
+    "decimal.js": "^10.6.0",
     "dotenv": "^17.2.2",
     "googleapis": "^160.0.0",
     "luxon": "^3.7.2",
