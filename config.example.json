@@ -4,7 +4,8 @@
     "type": "gmail",
     "credentialsJsonPath": "./credentials.json",
     "tokenJsonPath": "./token.json",
-    "label": "budget"
+    "label": "budget",
+    "headless": true
   },
   "parser": {
     "type": "email_router",

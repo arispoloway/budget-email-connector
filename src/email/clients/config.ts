@@ -8,6 +8,8 @@ export interface GmailConfig {
   credentialsJsonPath: string;
   tokenJsonPath: string;
   label: string;
+  headless?: boolean;
+  authCode?: string;
 }
 
 export function createEmailClientFromConfig(

@@ -5,6 +5,7 @@ import { GmailConfig } from "../config";
 import { promises as fs } from "fs";
 import path from "path";
 import readline from "readline";
+import { OAuth2Client } from "google-auth-library";
 
 function extractEmail(fromHeader: string): string {
   const regex = /<([^>]+)>|([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/;
@@ -16,70 +17,137 @@ const SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"];
 
 export class GmailClient {
   private config: GmailConfig;
-  private auth: any;
+  private auth!: OAuth2Client;
+  private credentials: any;
 
   constructor(config: GmailConfig) {
     this.config = config;
   }
 
   async init() {
+    await this.loadCredentials();
     await this.authorize();
   }
 
-  async authorize(): Promise<void> {
-    const credentials = JSON.parse(
+  private async loadCredentials(): Promise<void> {
+    this.credentials = JSON.parse(
       await fs.readFile(this.config.credentialsJsonPath, "utf8"),
     );
-    const { client_secret, client_id, redirect_uris } = credentials.web;
+  }
 
-    const oAuth2Client = new google.auth.OAuth2(
+  async authorize(): Promise<void> {
+    const { client_secret, client_id, redirect_uris } = this.credentials.web;
+
+    this.auth = new google.auth.OAuth2(
       client_id,
       client_secret,
-      redirect_uris,
+      redirect_uris[0],
     );
 
     // Try to load existing token
     try {
       const token = await fs.readFile(this.config.tokenJsonPath, "utf8");
-      oAuth2Client.setCredentials(JSON.parse(token));
-      this.auth = oAuth2Client;
+      const tokenData = JSON.parse(token);
+      this.auth.setCredentials(tokenData);
+
+      // Check if token is close to expiry and refresh if needed
+      await this.ensureValidToken();
     } catch {
-      this.auth = await this.getNewToken(oAuth2Client);
+      this.auth = await this.getNewToken();
     }
   }
 
-  private async getNewToken(oAuth2Client: any): Promise<any> {
-    const authUrl = oAuth2Client.generateAuthUrl({
+  private async ensureValidToken(): Promise<void> {
+    if (!this.auth.credentials.expiry_date) {
+      // No expiry date, assume token is invalid
+      await this.refreshToken();
+      return;
+    }
+
+    const now = Date.now();
+    const expiryTime = this.auth.credentials.expiry_date;
+    const timeUntilExpiry = expiryTime - now;
+
+    // Refresh token if it expires within the next 30 minutes
+    if (timeUntilExpiry < 30 * 60 * 1000) {
+      console.log("Token is close to expiry, refreshing...");
+      await this.refreshToken();
+    }
+  }
+
+  private async refreshToken(): Promise<void> {
+    if (!this.auth.credentials.refresh_token) {
+      throw new Error("No refresh token available. Please re-authenticate.");
+    }
+
+    try {
+      const { credentials } = await this.auth.refreshAccessToken();
+      this.auth.setCredentials(credentials);
+
+      // Save the refreshed token
+      await fs.writeFile(
+        this.config.tokenJsonPath,
+        JSON.stringify(credentials),
+      );
+      console.log("Token refreshed and saved");
+    } catch (error) {
+      console.error("Failed to refresh token:", error);
+      throw new Error("Token refresh failed. Please re-authenticate.");
+    }
+  }
+
+  private async getNewToken(): Promise<OAuth2Client> {
+    const authUrl = this.auth.generateAuthUrl({
       access_type: "offline",
       scope: SCOPES,
     });
-    console.log("Authorize this app by visiting this URL:", authUrl);
 
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    });
+    if (this.config.headless) {
+      if (this.config.authCode) {
+        // Use provided auth code for headless authentication
+        const { tokens } = await this.auth.getToken(this.config.authCode);
+        this.auth.setCredentials(tokens);
 
-    const code: string = await new Promise((resolve) => {
-      rl.question("Enter the code from that page here: ", (input) => {
-        rl.close();
-        resolve(input);
+        await fs.writeFile(this.config.tokenJsonPath, JSON.stringify(tokens));
+        console.log("Token stored to", this.config.tokenJsonPath);
+
+        return this.auth;
+      } else {
+        throw new Error(
+          `Headless mode enabled but no auth code provided. Please visit this URL to get an auth code: ${authUrl}\n` +
+            "Then set the 'authCode' property in your GmailConfig.",
+        );
+      }
+    } else {
+      // Interactive mode
+      console.log("Authorize this app by visiting this URL:", authUrl);
+
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
       });
-    });
 
-    const tokenResponse = await oAuth2Client.getToken(code);
-    oAuth2Client.setCredentials(tokenResponse.tokens);
+      const code: string = await new Promise((resolve) => {
+        rl.question("Enter the code from that page here: ", (input) => {
+          rl.close();
+          resolve(input);
+        });
+      });
 
-    await fs.writeFile(
-      this.config.tokenJsonPath,
-      JSON.stringify(tokenResponse.tokens),
-    );
-    console.log("Token stored to", this.config.tokenJsonPath);
+      const { tokens } = await this.auth.getToken(code);
+      this.auth.setCredentials(tokens);
 
-    return oAuth2Client;
+      await fs.writeFile(this.config.tokenJsonPath, JSON.stringify(tokens));
+      console.log("Token stored to", this.config.tokenJsonPath);
+
+      return this.auth;
+    }
   }
 
   async listUnprocessedMessages(store: EmailStore): Promise<Email[]> {
+    // Ensure token is valid before making API calls
+    await this.ensureValidToken();
+
     const gmail = google.gmail({ version: "v1", auth: this.auth });
 
     const res = await gmail.users.messages.list({
