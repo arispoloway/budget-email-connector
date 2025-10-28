@@ -124,6 +124,11 @@ export class DBSTransactionParser {
     } else if (email.subject === "iBanking Alerts") {
       return this.parseSentTransaction(email, "PayNow/FAST");
     } else if (
+      email.subject === "Transaction Alerts" &&
+      email.from === "ibanking.alert@dbs.com"
+    ) {
+      return this.parseSentTransaction(email, "PayNow/FAST");
+    } else if (
       email.subject === "digibank Alerts - You've received a transfer"
     ) {
       return this.parseReceivedTransaction(email);
