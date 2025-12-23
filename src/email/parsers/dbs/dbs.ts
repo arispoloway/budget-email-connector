@@ -114,6 +114,55 @@ export class DBSTransactionParser {
     ]);
   }
 
+  private parseCardTransaction(email: Email): TransactionParseResult {
+    const body = email.body;
+
+    const dateTimeMatch = body.match(/Date\s*&amp;\s*Time:\s*(.+?)\s*<br/i);
+    if (!dateTimeMatch)
+      return parseError("Could not identify 'date' field from email");
+
+    const dateTimeStr = dateTimeMatch[1].trim();
+    const date = parseDate(dateTimeStr);
+    if (!date) return parseError(`Could not parse date from '${dateTimeStr}'`);
+
+    const amountMatch = body.match(/Amount:\s*(.+?)\s*<br/i);
+    if (!amountMatch)
+      return parseError("Could not identify 'amount' field from email");
+    const amountStr = amountMatch[1].trim();
+    const amount = parseCurrencyAmount(amountStr)?.amount;
+    if (!amount)
+      return parseError(`Could not parse amount from '${amountStr}'`);
+
+    const fromMatch = body.match(/From:\s*(.+?)\s*<br/i);
+    if (!fromMatch)
+      return parseError("Could not identify 'from' field from email");
+    const from = fromMatch[1].trim();
+
+    const toMatch = body.match(/To:\s*(.+?)\s*<\/p>/i);
+    if (!toMatch) return parseError("Could not identify 'to' field from email");
+    const to = toMatch[1].trim();
+
+    let noteItems: string[] = [`Card Transaction from ${from}`];
+
+    const originalTransactionId = parseTransactionId(email.body);
+    if (originalTransactionId)
+      noteItems.push(`Transaction ID: ${originalTransactionId}`);
+    if (email.link) noteItems.push(`Link: ${email.link}`);
+
+    const notes = noteItems.join("\n");
+
+    return parseSuccess([
+      {
+        accountId: this.accountId,
+        importId: email.id,
+        date: date,
+        amount: amount.mul(-1),
+        payee: to,
+        notes: notes,
+      },
+    ]);
+  }
+
   parseTransactionEmail(email: Email): TransactionParseResult {
     if (
       email.subject === "Transaction Alerts" &&
@@ -132,6 +181,8 @@ export class DBSTransactionParser {
       email.subject === "digibank Alerts - You've received a transfer"
     ) {
       return this.parseReceivedTransaction(email);
+    } else if (email.subject === "Card Transaction Alert") {
+      return this.parseCardTransaction(email);
     } else {
       return parseSkipped("Email did not appear to be a transaction email");
     }

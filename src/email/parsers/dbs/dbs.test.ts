@@ -54,6 +54,38 @@ ${transactionId ? `>Transaction Ref: ${transactionId}</` : ""}
 </body>
 </html>`;
 
+// Helper function to create card transaction HTML
+const createCardTransactionHTML = (
+  amount: string,
+  dateTime: string,
+  from: string,
+  to: string,
+  transactionId?: string,
+) => `
+<html>
+<body>
+<td style="background-color: #ffffff;"><table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+  <tbody>
+    <tr>
+      <td class="col-mob" style="padding: 30px 30px 15px; font-size: 15px; line-height: 20px; font-family: Arial, sans-serif; color: #000000; text-align: left;">
+        ${transactionId ? `<p style="margin: 0 0 15px;">Transaction Ref: ${transactionId} </p>` : ""}
+        <p style="margin: 0 0 15px;">Dear Sir / Madam,</p>
+        <p style="margin: 0 0 15px;">We refer to your card transaction request dated 23/12/25. We are pleased to confirm that the transaction was completed.</p>
+        <p style="margin: 0 0 15px;">
+Date &amp; Time: ${dateTime}  <br>
+Amount: ${amount}  <br>
+From: ${from} <br>
+To: ${to}  </p>
+        <p style="margin: 0 0 30px;">If unauthorised, please login to DBS digibank mobile to report fraud dispute immediately. Alternatively, call our DBS hotline.</p>
+        <p style="margin: 0 0 30px;">Thank you for banking with us.</p>
+        <p style="margin: 0 0 15px;">Yours faithfully, <br>DBS Bank Ltd</p>
+      </td>
+    </tr>
+  </tbody>
+</table></td>
+</body>
+</html>`;
+
 const EXPECTATIONS: ParseTest[] = [
   {
     name: "irrelevant email is skipped",
@@ -548,6 +580,83 @@ const EXPECTATIONS: ParseTest[] = [
         amount: new Decimal(0.01),
         payee: "Sam Wilson",
         notes: "PayNow Received from Sam Wilson to Tony Stark",
+      },
+    ]),
+  },
+  {
+    name: "card transaction parses properly",
+    email: {
+      id: emailId,
+      from: "ibanking.alert@dbs.com",
+      subject: "Card Transaction Alert",
+      body: createCardTransactionHTML(
+        "SGD61.80",
+        "23 DEC 2025 18:41 (SGT)",
+        "DBS/POSB card ending 1234",
+        "PAPERMARKET PTE LTD",
+        "SP1400984550000000184126",
+      ),
+    },
+    expected: parseSuccess([
+      {
+        accountId: accountId,
+        importId: emailId,
+        date: new Date("2025-12-23T18:41:00+08:00"),
+        amount: new Decimal(-61.8),
+        payee: "PAPERMARKET PTE LTD",
+        notes:
+          "Card Transaction from DBS/POSB card ending 1234\nTransaction ID: SP1400984550000000184126",
+      },
+    ]),
+  },
+  {
+    name: "card transaction without transaction ID",
+    email: {
+      id: emailId,
+      from: "ibanking.alert@dbs.com",
+      subject: "Card Transaction Alert",
+      body: createCardTransactionHTML(
+        "SGD 100.00",
+        "15 Nov 2024 10:30 (SGT)",
+        "DBS/POSB card ending 5678",
+        "SOME MERCHANT",
+      ),
+    },
+    expected: parseSuccess([
+      {
+        accountId: accountId,
+        importId: emailId,
+        date: new Date("2024-11-15T10:30:00+08:00"),
+        amount: new Decimal(-100.0),
+        payee: "SOME MERCHANT",
+        notes: "Card Transaction from DBS/POSB card ending 5678",
+      },
+    ]),
+  },
+  {
+    name: "card transaction with link",
+    email: {
+      id: emailId,
+      from: "ibanking.alert@dbs.com",
+      subject: "Card Transaction Alert",
+      body: createCardTransactionHTML(
+        "USD 25.99",
+        "01 Oct 2024 14:00 (SGT)",
+        "DBS/POSB card ending 9999",
+        "ONLINE STORE",
+        "TXN123ABC",
+      ),
+      link: "https://dbs.com/card/789",
+    },
+    expected: parseSuccess([
+      {
+        accountId: accountId,
+        importId: emailId,
+        date: new Date("2024-10-01T14:00:00+08:00"),
+        amount: new Decimal(-25.99),
+        payee: "ONLINE STORE",
+        notes:
+          "Card Transaction from DBS/POSB card ending 9999\nTransaction ID: TXN123ABC\nLink: https://dbs.com/card/789",
       },
     ]),
   },
