@@ -34,8 +34,11 @@ jobs:
       - name: Build package
         run: npm run build
 
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Run tests
-        run: npm run test-ci
+        run: npm run test:run
 
       - name: Verify build artifacts
         run: |

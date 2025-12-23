@@ -1,14 +1,11 @@
-FROM node:24-slim AS build
+FROM node:24-slim
 
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN npm run build
 
-FROM node:24-slim AS runtime
+# Type-check during build to catch errors early
+RUN npm run typecheck
 
-WORKDIR /app
-COPY --from=build /app ./
-
-CMD ["node", "dist/index.js"]
+CMD ["npx", "tsx", "src/index.ts"]

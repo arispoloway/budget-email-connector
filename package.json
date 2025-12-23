@@ -1,16 +1,18 @@
 {
   "name": "budget-email-connector",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Import transaction data from bank emails into personal finance apps",
+  "type": "module",
+  "exports": "./dist/index.js",
   "scripts": {
-    "dev": "nodemon --watch src --exec ts-node src/index.ts",
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
     "build": "tsc",
-    "start": "node dist/index.js",
     "format": "prettier . --write",
     "lint": "prettier . --check",
     "test": "vitest",
-    "test-ci": "vitest run"
+    "test:run": "vitest run"
   },
   "keywords": [],
   "author": "",
@@ -31,9 +33,8 @@
     "@types/luxon": "^3.7.1",
     "@types/mailparser": "^3.4.6",
     "@types/node": "^24.5.2",
-    "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.19.4",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   },
