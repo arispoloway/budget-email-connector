@@ -668,3 +668,65 @@ EXPECTATIONS.forEach((e) => {
     expect(parser.parseTransactionEmail(e.email)).toEqual(e.expected);
   });
 });
+
+// Card number mapping tests
+test("card transaction with matching card number mapping uses mapped account ID", () => {
+  const defaultAccountId = "default-account";
+  const cardAccountId = "card-account-1234";
+  const cardNumberMapping = {
+    "1234": cardAccountId,
+  };
+  const parser = new DBSTransactionParser(defaultAccountId, cardNumberMapping);
+
+  const email: Email = {
+    id: emailId,
+    from: "ibanking.alert@dbs.com",
+    subject: "Card Transaction Alert",
+    body: createCardTransactionHTML(
+      "SGD61.80",
+      "23 DEC 2025 18:41 (SGT)",
+      "DBS/POSB card ending 1234",
+      "PAPERMARKET PTE LTD",
+      "SP1400984550000000184126",
+    ),
+  };
+
+  const result = parser.parseTransactionEmail(email);
+  expect(result.result).toBe("SUCCESS");
+  if (result.result === "SUCCESS") {
+    expect(result.transactions).toHaveLength(1);
+    expect(result.transactions[0].accountId).toBe(cardAccountId);
+    expect(result.transactions[0].importId).toBe(emailId);
+    expect(result.transactions[0].amount).toEqual(new Decimal(-61.8));
+  }
+});
+
+test("card transaction with non-matching card number mapping falls back to default account ID", () => {
+  const defaultAccountId = "default-account";
+  const cardAccountId = "card-account-1234";
+  const cardNumberMapping = {
+    "1234": cardAccountId,
+  };
+  const parser = new DBSTransactionParser(defaultAccountId, cardNumberMapping);
+
+  const email: Email = {
+    id: emailId,
+    from: "ibanking.alert@dbs.com",
+    subject: "Card Transaction Alert",
+    body: createCardTransactionHTML(
+      "SGD100.00",
+      "15 Nov 2024 10:30 (SGT)",
+      "DBS/POSB card ending 9999",
+      "SOME MERCHANT",
+    ),
+  };
+
+  const result = parser.parseTransactionEmail(email);
+  expect(result.result).toBe("SUCCESS");
+  if (result.result === "SUCCESS") {
+    expect(result.transactions).toHaveLength(1);
+    expect(result.transactions[0].accountId).toBe(defaultAccountId);
+    expect(result.transactions[0].importId).toBe(emailId);
+    expect(result.transactions[0].amount).toEqual(new Decimal(-100.0));
+  }
+});

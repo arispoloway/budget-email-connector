@@ -8,6 +8,14 @@ export type ParserConfig = DBSParserConfig | RoutingParserConfig;
 export interface DBSParserConfig {
   type: "dbs";
   accountId: string;
+  /**
+   * Optional mapping from card number last 4 digits to account IDs.
+   * For card transactions, if the last 4 digits (as they appear in the email's "From" field,
+   * e.g., "DBS/POSB card ending 1234") match a key in this mapping, the transaction will
+   * be assigned to the mapped account ID instead of the default accountId.
+   * Example: { "1234": "card-account-id", "5678": "another-card-account-id" }
+   */
+  cardNumberMapping?: Record<string, string>;
 }
 
 export interface RoutingParserConfig {
@@ -22,8 +30,13 @@ export function createParserFromConfig(
   config: ParserConfig,
 ): TransactionParser {
   switch (config.type) {
-    case "dbs":
-      return new DBSTransactionParser((config as DBSParserConfig).accountId);
+    case "dbs": {
+      const dbsConfig = config as DBSParserConfig;
+      return new DBSTransactionParser(
+        dbsConfig.accountId,
+        dbsConfig.cardNumberMapping,
+      );
+    }
 
     case "email_router": {
       const routingConfig = config as RoutingParserConfig;

@@ -14,7 +14,11 @@
         "emails": ["paylah.alert@dbs.com", "ibanking.alert@dbs.com"],
         "parser": {
           "type": "dbs",
-          "accountId": "<FILL ME IN>"
+          "accountId": "<FILL ME IN>",
+          "cardNumberMapping": {
+            "1234": "<CARD_ACCOUNT_ID_1>",
+            "5678": "<CARD_ACCOUNT_ID_2>"
+          }
         }
       }
     ]

@@ -16,12 +16,14 @@ import {
 
 export class DBSTransactionParser {
   private accountId: string;
+  private cardNumberMapping?: Record<string, string>;
 
-  constructor(accountId: string) {
+  constructor(accountId: string, cardNumberMapping?: Record<string, string>) {
     if (!accountId) {
       throw new Error("Invalid account id provided");
     }
     this.accountId = accountId;
+    this.cardNumberMapping = cardNumberMapping;
   }
 
   private parseSentTransaction(
@@ -142,6 +144,21 @@ export class DBSTransactionParser {
     if (!toMatch) return parseError("Could not identify 'to' field from email");
     const to = toMatch[1].trim();
 
+    // Extract last 4 digits from the "From" field (e.g., "DBS/POSB card ending 1234")
+    // Check if they match any cardNumberMapping entry
+    let accountId = this.accountId;
+    if (this.cardNumberMapping) {
+      // Check if any mapping key digits are included in the "From" field
+      for (const [mappedDigits, mappedAccountId] of Object.entries(
+        this.cardNumberMapping,
+      )) {
+        if (from.includes(mappedDigits)) {
+          accountId = mappedAccountId;
+          break;
+        }
+      }
+    }
+
     let noteItems: string[] = [`Card Transaction from ${from}`];
 
     const originalTransactionId = parseTransactionId(email.body);
@@ -153,7 +170,7 @@ export class DBSTransactionParser {
 
     return parseSuccess([
       {
-        accountId: this.accountId,
+        accountId: accountId,
         importId: email.id,
         date: date,
         amount: amount.mul(-1),
