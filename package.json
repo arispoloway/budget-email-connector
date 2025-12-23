@@ -12,7 +12,11 @@
     "format": "prettier . --write",
     "lint": "prettier . --check",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "docker:build": "docker build -t budget-email-connector:latest .",
+    "docker:build:tag": "docker build -t budget-email-connector:$(node -p \"require('./package.json').version\") .",
+    "docker:run": "docker run --rm -it budget-email-connector:latest",
+    "docker:dev": "docker build -t budget-email-connector . && docker run --rm -it --network host -v $(pwd):/app budget-email-connector"
   },
   "keywords": [],
   "author": "",
