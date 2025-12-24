@@ -11,6 +11,7 @@ describe("parseConfig", () => {
   test("parses valid config successfully", () => {
     const config: Config = {
       emailStorePath: ":memory:",
+      refresh_interval_seconds: 300,
       email: {
         type: "gmail",
         credentialsJsonPath: "/path/to/credentials.json",
@@ -40,6 +41,7 @@ describe("parseConfig", () => {
     expect(result.destination).toBeInstanceOf(ActualClient);
     expect(result.parser).toBeInstanceOf(DBSTransactionParser);
     expect(result.notifier).toBeInstanceOf(DiscordNotifier);
+    expect(result.refreshIntervalMs).toBe(300 * 1000);
   });
 });
 
@@ -82,6 +84,7 @@ describe("parseConfigFromFile", () => {
     expect(result.destination).toBeInstanceOf(ActualClient);
     expect(result.parser).toBeInstanceOf(DBSTransactionParser);
     expect(result.notifier).toBeInstanceOf(DiscordNotifier);
+    expect(result.refreshIntervalMs).toBe(600 * 1000);
     expect(fs.readFile).toHaveBeenCalledWith("/path/to/config.json", "utf8");
   });
 

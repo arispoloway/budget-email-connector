@@ -21,6 +21,7 @@ export type ParsedConfig = {
   destination: Destination;
   parser: TransactionParser;
   notifier: Notifier;
+  refreshIntervalMs: number;
 };
 
 // TODO: configurable email client
@@ -30,15 +31,21 @@ export type Config = {
   destination: DestinationConfig;
   parser: ParserConfig;
   notifier: NotifierConfig;
+  refresh_interval_seconds?: number;
 };
 
+const DEFAULT_REFRESH_INTERVAL_SECONDS = 600; // 10 minutes
+
 export function parseConfig(config: Config): ParsedConfig {
+  const refreshIntervalSeconds =
+    config.refresh_interval_seconds ?? DEFAULT_REFRESH_INTERVAL_SECONDS;
   return {
     emailStore: new EmailStore(config.emailStorePath),
     email: createEmailClientFromConfig(config.email),
     destination: createDestinationFromConfig(config.destination),
     parser: createParserFromConfig(config.parser),
     notifier: createNotifierFromConfig(config.notifier),
+    refreshIntervalMs: refreshIntervalSeconds * 1000,
   };
 }
 
