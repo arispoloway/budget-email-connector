@@ -10,7 +10,7 @@ async function main() {
   await runner.init();
 
   try {
-    await runner.runRepeatedly(10 * 60 * 1000); // every 10 mins. TODO: configurable
+    await runner.runRepeatedly(config.refreshIntervalMs);
   } finally {
     await config.destination.shutdown();
   }
