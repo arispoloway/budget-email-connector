@@ -13,4 +13,9 @@ export interface EmailClient {
   init(): Promise<void>;
 
   listUnprocessedMessages(store: EmailStore): Promise<Email[]>;
+
+  /**
+   * Gracefully close the email client connection.
+   */
+  close(): Promise<void>;
 }

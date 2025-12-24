@@ -126,7 +126,7 @@ export function extractStrongField(
 }
 
 export function parseTransactionId(html: string): string | undefined {
-  const regex = />\s*Transaction Ref:\s*(.*?)\s*<\//i;
+  const regex = />\s*Transaction Ref:\s*([A-Z0-9]+)/i;
   const match = html.match(regex);
 
   if (match) {

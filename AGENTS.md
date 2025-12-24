@@ -8,7 +8,7 @@
 
 **Stack:** TypeScript, Node.js 20+, Vitest, Prettier, SQLite (better-sqlite3)
 
-**Key libraries:** `decimal.js` (money), `luxon` (dates), `cheerio` (HTML parsing), `googleapis` (Gmail API)
+**Key libraries:** `decimal.js` (money), `luxon` (dates), `cheerio` (HTML parsing), `imapflow` (IMAP client), `googleapis` (Gmail API - legacy)
 
 ## Repository Structure
 
@@ -19,9 +19,9 @@ src/
 ├── config.ts         # Config loading and dependency wiring
 ├── email/
 │   ├── store.ts      # SQLite store for processed emails
-│   ├── clients/      # Email provider integrations (Gmail)
+│   ├── clients/      # Email provider integrations (IMAP preferred, Gmail legacy)
 │   └── parsers/      # Email → Transaction parsers (DBS)
-├── destinations/     # Finance app integrations (ActualBudget)
+├── destinations/     # Finance app integrations (ActualBudget, Logging)
 └── notifiers/        # Notification integrations (Discord)
 ```
 
@@ -170,10 +170,18 @@ EXPECTATIONS.forEach((e) => {
 | Change poll interval | `src/index.ts` (hardcoded, marked TODO)                        |
 | Add config option    | `src/config.ts`, `config.example.json`                         |
 
+## Documentation Maintenance
+
+When making significant changes to the codebase, update the relevant documentation:
+
+- **README.md** - Update when adding new integrations, changing user-facing features, or modifying setup instructions
+- **AGENTS.md** - Update when adding new integration types, changing repository structure, modifying coding patterns, or adding new common tasks
+- **config.example.json** - Update when adding new configuration options
+
 ## Known TODOs in Codebase
 
 - Config location should be specifiable via CLI
 - Better config validation and error messages
 - Poll interval should be configurable
-- Gmail pagination for >50 messages
+- Gmail client has token refresh issues (prefer IMAP client instead)
 - Received PayLah transaction parsing

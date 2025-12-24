@@ -2,11 +2,15 @@
   "emailStorePath": "./emails.sqlite",
   "refresh_interval_seconds": 600,
   "email": {
-    "type": "gmail",
-    "credentialsJsonPath": "./credentials.json",
-    "tokenJsonPath": "./token.json",
-    "label": "budget",
-    "headless": true
+    "type": "imap",
+    "host": "imap.gmail.com",
+    "port": 993,
+    "secure": true,
+    "auth": {
+      "user": "your-email@gmail.com",
+      "pass": "<APP_PASSWORD>"
+    },
+    "mailbox": "budget"
   },
   "parser": {
     "type": "email_router",

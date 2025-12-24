@@ -2,9 +2,11 @@ import { expect, test, describe } from "vitest";
 import {
   createDestinationFromConfig,
   ActualBudgetDestinationConfig,
+  LoggingDestinationConfig,
   DestinationConfig,
 } from "./config";
 import { ActualClient } from "./actual";
+import { LoggingDestination } from "./logging";
 
 describe("createDestinationFromConfig", () => {
   test("creates ActualBudget destination from config", () => {
@@ -30,6 +32,15 @@ describe("createDestinationFromConfig", () => {
 
     const destination = createDestinationFromConfig(config);
     expect(destination).toBeInstanceOf(ActualClient);
+  });
+
+  test("creates Logging destination from config", () => {
+    const config: LoggingDestinationConfig = {
+      type: "logging",
+    };
+
+    const destination = createDestinationFromConfig(config);
+    expect(destination).toBeInstanceOf(LoggingDestination);
   });
 
   test("throws error for unknown destination type", () => {

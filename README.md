@@ -14,7 +14,8 @@ This project is very WIP, but my initial goal is to get the banks/services I per
 
 ### Email Provider
 
-- Gmail. Works via oauth2 (not working great currently), assuming you have relevant emails tagged with some label (via a filter or manually)
+- **IMAP (Recommended)** - Works with any email provider that supports IMAP. Simple username/password authentication. Most providers support app-specific passwords for enhanced security.
+- Gmail (Legacy) - Direct integration via OAuth2. Available but somewhat buggy with token refresh issues. Consider using IMAP with Gmail instead (enable IMAP in Gmail settings and use an [app password](https://support.google.com/accounts/answer/185833)).
 
 ### Email Transaction Format
 
@@ -22,7 +23,8 @@ This project is very WIP, but my initial goal is to get the banks/services I per
 
 ### Financial Application
 
-- ActualBudget
+- **ActualBudget** - Full integration with ActualBudget for importing transactions
+- **Logging** - Debug/testing destination that pretty-prints transactions to console instead of importing them
 
 ### Notifications
 
