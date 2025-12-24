@@ -5,7 +5,7 @@ export type ImportTransactionResult = {};
 
 export interface Destination {
   init(): Promise<void>;
-  shutdown(): Promise<void>;
+  close(): Promise<void>;
   importTransactions(
     transactions: Transaction[],
   ): Promise<ImportTransactionResult>;

@@ -29,6 +29,10 @@ export class GmailClient {
     await this.authorize();
   }
 
+  async close(): Promise<void> {
+    // Gmail API client doesn't require explicit cleanup
+  }
+
   private async loadCredentials(): Promise<void> {
     this.credentials = JSON.parse(
       await fs.readFile(this.config.credentialsJsonPath, "utf8"),

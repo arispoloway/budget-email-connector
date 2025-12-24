@@ -47,7 +47,7 @@ export class ActualClient {
     await Actual.downloadBudget(this.syncId);
   }
 
-  async shutdown(): Promise<void> {
+  async close(): Promise<void> {
     await Actual.shutdown();
   }
 

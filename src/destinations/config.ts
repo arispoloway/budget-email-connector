@@ -1,7 +1,10 @@
 import { ActualClient } from "./actual";
 import { Destination } from "./destination";
+import { LoggingDestination } from "./logging";
 
-export type DestinationConfig = ActualBudgetDestinationConfig;
+export type DestinationConfig =
+  | ActualBudgetDestinationConfig
+  | LoggingDestinationConfig;
 
 export interface ActualBudgetDestinationConfig {
   type: "actual_budget";
@@ -9,6 +12,10 @@ export interface ActualBudgetDestinationConfig {
   url: string;
   syncId: string;
   noteSuffix?: string;
+}
+
+export interface LoggingDestinationConfig {
+  type: "logging";
 }
 
 export function createDestinationFromConfig(
@@ -25,6 +32,8 @@ export function createDestinationFromConfig(
         config.syncId,
         config.noteSuffix,
       );
+    case "logging":
+      return new LoggingDestination();
     default:
       throw new Error(`Unknown destination type: ${(config as any).type}`);
   }

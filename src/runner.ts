@@ -1,12 +1,18 @@
 import { ParsedConfig } from "./config";
 import { Destination } from "./destinations/destination";
-import { EmailClient } from "./email/clients/types";
+import { Email, EmailClient } from "./email/clients/types";
 import { ParseResult, TransactionParser } from "./email/parsers/parser";
 import { EmailStore } from "./email/store";
 import { Notifier } from "./notifiers/notifier";
 
 function timeout(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function formatEmailRef(email: Email): string {
+  return email.link
+    ? `[email](${email.link})`
+    : `email from '${email.from}' with subject '${email.subject}'`;
 }
 
 export class Runner {
@@ -40,19 +46,19 @@ export class Runner {
             .map((t) => `- ${t.payee}: (${t.amount.toFixed(2)})`)
             .join("\n");
           await this.notifier.info(
-            `Successfully imported transactions from [email](${email.link}):\n${transactionStr}`,
+            `Successfully imported transactions from ${formatEmailRef(email)}\n${transactionStr}`,
           );
           await this.store.markEmailSeen(email.id);
           break;
         case ParseResult.SKIPPED:
           await this.notifier.info(
-            `Skipped [email](${email.link}) from '${email.from}' with subject '${email.subject}'\n'${ts.error}'`,
+            `Skipped ${formatEmailRef(email)}\n'${ts.error}'`,
           );
           await this.store.markEmailSeen(email.id);
           break;
         case ParseResult.ERROR:
           await this.notifier.err(
-            `Error while parsing transaction [email](${email.link}):\n${ts.error}`,
+            `Error while parsing transaction ${formatEmailRef(email)}\n${ts.error}`,
           );
           break;
       }

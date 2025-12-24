@@ -12,7 +12,8 @@ async function main() {
   try {
     await runner.runRepeatedly(config.refreshIntervalMs);
   } finally {
-    await config.destination.shutdown();
+    await config.destination.close();
+    await config.email.close();
   }
 }
 
