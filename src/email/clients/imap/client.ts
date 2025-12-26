@@ -13,18 +13,30 @@ function extractEmail(fromHeader: string): string {
 export class ImapClient implements EmailClient {
   private config: ImapConfig;
   private client: ImapFlow;
+  private needsNewClient: boolean;
 
   constructor(config: ImapConfig) {
     this.config = config;
-    this.client = new ImapFlow({
-      host: config.host,
-      port: config.port,
-      secure: config.secure ?? true,
+    this.client = this.newClient();
+    this.needsNewClient = false;
+  }
+
+  newClient(): ImapFlow {
+    let client = new ImapFlow({
+      host: this.config.host,
+      port: this.config.port,
+      secure: this.config.secure ?? true,
       auth: {
-        user: config.auth.user,
-        pass: config.auth.pass,
+        user: this.config.auth.user,
+        pass: this.config.auth.pass,
       },
     });
+
+    client.on("close", () => {
+      this.needsNewClient = true;
+    });
+
+    return client;
   }
 
   async init(): Promise<void> {
@@ -36,6 +48,12 @@ export class ImapClient implements EmailClient {
   }
 
   async listUnprocessedMessages(store: EmailStore): Promise<Email[]> {
+    if (this.needsNewClient) {
+      this.client = this.newClient();
+      await this.client.connect();
+      this.needsNewClient = false;
+    }
+
     const mailbox = this.config.mailbox ?? "INBOX";
     const lock = await this.client.getMailboxLock(mailbox);
 
