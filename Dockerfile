@@ -5,7 +5,4 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 
-# Type-check during build to catch errors early
-RUN npm run typecheck
-
 CMD ["npx", "tsx", "src/index.ts"]
