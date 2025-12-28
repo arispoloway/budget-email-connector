@@ -11,7 +11,7 @@ function timeout(ms: number) {
 
 function formatEmailRef(email: Email): string {
   return email.link
-    ? `[email](${email.link})`
+    ? `email: ${email.link}`
     : `email from '${email.from}' with subject '${email.subject}'`;
 }
 
@@ -42,22 +42,21 @@ export class Runner {
       switch (ts.result) {
         case ParseResult.SUCCESS:
           await this.destination.importTransactions(ts.transactions);
-          const transactionStr = ts.transactions
-            .map((t) => `- ${t.payee}: (${t.amount.toFixed(2)})`)
-            .join("\n");
-          await this.notifier.info(
-            `Successfully imported transactions from ${formatEmailRef(email)}\n${transactionStr}`,
+          await this.notifier.notifyTransactionsImported(
+            email,
+            ts.transactions,
           );
           await this.store.markEmailSeen(email.id);
           break;
         case ParseResult.SKIPPED:
-          await this.notifier.info(
-            `Skipped ${formatEmailRef(email)}\n'${ts.error}'`,
+          await this.notifier.notifyEmailSkipped(
+            email,
+            ts.error || "Unknown reason",
           );
           await this.store.markEmailSeen(email.id);
           break;
         case ParseResult.ERROR:
-          await this.notifier.err(
+          await this.notifier.notifyError(
             `Error while parsing transaction ${formatEmailRef(email)}\n${ts.error}`,
           );
           break;
@@ -70,7 +69,7 @@ export class Runner {
       try {
         await this.run();
       } catch (e: any) {
-        await this.notifier.err(
+        await this.notifier.notifyError(
           `Uncaught error running transaction sync: ${e.toString()}`,
         );
       }

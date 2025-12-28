@@ -1,4 +1,11 @@
+import { Email } from "../email/clients/types";
+import { Transaction } from "../email/parsers/parser";
+
 export interface Notifier {
-  info(message: string): Promise<void>;
-  err(message: string): Promise<void>;
+  notifyTransactionsImported(
+    email: Email,
+    transactions: Transaction[],
+  ): Promise<void>;
+  notifyEmailSkipped(email: Email, reason: string): Promise<void>;
+  notifyError(message: string): Promise<void>;
 }
