@@ -59,7 +59,7 @@ describe("DiscordNotifier", () => {
       expect(payload.embeds).toHaveLength(1);
       const embed = payload.embeds[0];
 
-      expect(embed.title).toBe("💸 Payment Sent");
+      expect(embed.title).toBe("💸 -$150.50 to Coffee Shop");
       expect(embed.color).toBe(0xed4245); // Red color for payments
       expect(embed.fields).toEqual(
         expect.arrayContaining([
@@ -112,7 +112,7 @@ describe("DiscordNotifier", () => {
       expect(payload.embeds).toHaveLength(1);
       const embed = payload.embeds[0];
 
-      expect(embed.title).toBe("💰 Money Received");
+      expect(embed.title).toBe("💰 +$500.00 from John Doe");
       expect(embed.color).toBe(0x57f287); // Green color for received
       expect(embed.fields).toEqual(
         expect.arrayContaining([
@@ -170,8 +170,8 @@ describe("DiscordNotifier", () => {
       const payload = JSON.parse(callArgs[1].body);
 
       expect(payload.embeds).toHaveLength(2);
-      expect(payload.embeds[0].title).toBe("💸 Payment Sent");
-      expect(payload.embeds[1].title).toBe("💰 Money Received");
+      expect(payload.embeds[0].title).toBe("💸 -$25.00 to Gas Station");
+      expect(payload.embeds[1].title).toBe("💰 +$100.00 from Client Payment");
     });
 
     test("handles transaction without notes", async () => {
@@ -197,6 +197,7 @@ describe("DiscordNotifier", () => {
       const payload = JSON.parse(callArgs[1].body);
       const embed = payload.embeds[0];
 
+      expect(embed.title).toBe("💸 -$50.00 to Restaurant");
       // Should not have a Notes field
       const notesField = embed.fields.find((f: any) => f.name === "Notes");
       expect(notesField).toBeUndefined();
@@ -225,6 +226,7 @@ describe("DiscordNotifier", () => {
       const payload = JSON.parse(callArgs[1].body);
       const embed = payload.embeds[0];
 
+      expect(embed.title).toBe("💸 -$10.00 to Store");
       expect(embed.footer.text).toContain("From: test@example.com");
       expect(embed.footer.text).toContain("Subject: Test Subject");
       expect(embed.footer.text).not.toContain("[View Email]");
@@ -250,10 +252,10 @@ describe("DiscordNotifier", () => {
 
       const callArgs = mockFetch.mock.calls[0];
       const payload = JSON.parse(callArgs[1].body);
-      const amountField = payload.embeds[0].fields.find(
-        (f: any) => f.name === "Amount",
-      );
+      const embed = payload.embeds[0];
+      const amountField = embed.fields.find((f: any) => f.name === "Amount");
 
+      expect(embed.title).toBe("💰 +$123.46 from Vendor");
       expect(amountField.value).toBe("+$123.46"); // Rounded to 2 decimal places
     });
 
@@ -278,13 +280,13 @@ describe("DiscordNotifier", () => {
 
       const callArgs = mockFetch.mock.calls[0];
       const payload = JSON.parse(callArgs[1].body);
-      const payeeField = payload.embeds[0].fields.find(
-        (f: any) => f.name === "Payee",
-      );
-      const notesField = payload.embeds[0].fields.find(
-        (f: any) => f.name === "Notes",
-      );
+      const embed = payload.embeds[0];
+      const payeeField = embed.fields.find((f: any) => f.name === "Payee");
+      const notesField = embed.fields.find((f: any) => f.name === "Notes");
 
+      expect(embed.title).toBe(
+        "💸 -$50.00 to **BOLD** Store *italic* ~strikethrough~",
+      );
       // Should be wrapped in backticks to prevent markdown interpretation
       expect(payeeField.value).toBe(
         "`**BOLD** Store *italic* ~strikethrough~`",
