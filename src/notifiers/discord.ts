@@ -74,6 +74,14 @@ export class DiscordNotifier implements Notifier {
     return `\`${text}\``;
   }
 
+  private formatTransactionSummary(transaction: Transaction): string {
+    const isPayment = transaction.amount.isNegative();
+    const emoji = isPayment ? "💸" : "💰";
+    const amount = this.formatAmount(transaction.amount);
+    const payee = transaction.payee;
+    return `${emoji} ${amount} ${isPayment ? "to" : "from"} ${payee}`;
+  }
+
   async notifyTransactionsImported(
     email: Email,
     transactions: Transaction[],
@@ -109,7 +117,7 @@ export class DiscordNotifier implements Notifier {
       }
 
       return {
-        title: isPayment ? "💸 Payment Sent" : "💰 Money Received",
+        title: this.formatTransactionSummary(transaction),
         color,
         fields,
         footer: {
