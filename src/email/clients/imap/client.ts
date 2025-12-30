@@ -13,15 +13,15 @@ function extractEmail(fromHeader: string): string {
 export class ImapClient implements EmailClient {
   private config: ImapConfig;
   private client: ImapFlow;
-  private needsReconnect: boolean;
+  private connected: boolean;
 
   constructor(config: ImapConfig) {
     this.config = config;
     this.client = this.newClient();
-    this.needsReconnect = false;
+    this.connected = false;
   }
 
-  newClient(): ImapFlow {
+  private newClient(): ImapFlow {
     let client = new ImapFlow({
       host: this.config.host,
       port: this.config.port,
@@ -33,28 +33,30 @@ export class ImapClient implements EmailClient {
     });
 
     client.on("close", () => {
-      this.needsReconnect = true;
+      this.connected = false;
+      this.client = this.newClient();
     });
 
     return client;
   }
 
   async init(): Promise<void> {
-    if (!this.needsReconnect) {
+    if (this.connected) {
       return;
     }
 
     await this.client.connect();
-    this.needsReconnect = false;
+    this.connected = true;
   }
 
   async close(): Promise<void> {
-    if (this.needsReconnect) {
+    if (!this.connected) {
       return;
     }
 
     await this.client.logout();
-    this.needsReconnect = true;
+    this.client = this.newClient();
+    this.connected = false;
   }
 
   async listUnprocessedMessages(store: EmailStore): Promise<Email[]> {
@@ -63,9 +65,9 @@ export class ImapClient implements EmailClient {
     const mailbox = this.config.mailbox ?? "INBOX";
     const lock = await this.client.getMailboxLock(mailbox);
 
-    try {
-      const messages: Email[] = [];
+    const messages: Email[] = [];
 
+    try {
       const now = new Date();
       const oneMonthAgo = new Date(now);
       oneMonthAgo.setMonth(now.getMonth() - 1); // TODO: make the lookback configurable
@@ -94,11 +96,11 @@ export class ImapClient implements EmailClient {
           messages.push(email);
         }
       }
-
-      return messages;
     } finally {
       lock.release();
     }
+
+    return messages;
   }
 
   private buildEmailId(msg: FetchMessageObject): string {
