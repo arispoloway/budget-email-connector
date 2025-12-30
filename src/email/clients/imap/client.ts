@@ -13,12 +13,12 @@ function extractEmail(fromHeader: string): string {
 export class ImapClient implements EmailClient {
   private config: ImapConfig;
   private client: ImapFlow;
-  private connected: boolean;
+  private needsReconnect: boolean;
 
   constructor(config: ImapConfig) {
     this.config = config;
     this.client = this.newClient();
-    this.connected = false;
+    this.needsReconnect = false;
   }
 
   newClient(): ImapFlow {
@@ -33,23 +33,28 @@ export class ImapClient implements EmailClient {
     });
 
     client.on("close", () => {
-      this.connected = false;
+      this.needsReconnect = true;
     });
 
     return client;
   }
 
   async init(): Promise<void> {
-    if (this.connected) {
+    if (!this.needsReconnect) {
       return;
     }
 
     await this.client.connect();
-    this.connected = true;
+    this.needsReconnect = false;
   }
 
   async close(): Promise<void> {
+    if (this.needsReconnect) {
+      return;
+    }
+
     await this.client.logout();
+    this.needsReconnect = true;
   }
 
   async listUnprocessedMessages(store: EmailStore): Promise<Email[]> {
