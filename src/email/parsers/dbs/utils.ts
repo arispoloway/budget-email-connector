@@ -81,7 +81,7 @@ export function parseDate(input: string, now: Date = new Date()): Date | null {
   }
 
   const datePart = parts.slice(0, -1).join(" ");
-  const nowDt = DateTime.fromJSDate(now);
+  const nowDt = DateTime.fromJSDate(now, { zone });
 
   // Try with year
   let dt = tryParse(datePart, ["d LLL yyyy HH:mm"], zone);
@@ -92,8 +92,11 @@ export function parseDate(input: string, now: Date = new Date()): Date | null {
   if (dt?.isValid) {
     let candidate = dt.set({ year: nowDt.year });
 
-    // If candidate is in the future, roll back one year
-    if (candidate > nowDt) {
+    // Silly hack to handle the lack of a provided year in the cases where
+    // the transaction may or may not be recorded in the TZ that the app is running in.
+    // We could/should do something smarter, but this should work for now...
+    const daysDiff = candidate.diff(nowDt, "days").days;
+    if (daysDiff > 2) {
       candidate = candidate.minus({ years: 1 });
     }
     return candidate.toJSDate();
