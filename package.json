@@ -22,7 +22,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@actual-app/api": "^25.9.0",
+    "@actual-app/api": "^26.2.0",
     "better-sqlite3": "^12.4.1",
     "cheerio": "^1.1.2",
     "decimal.js": "^10.6.0",
