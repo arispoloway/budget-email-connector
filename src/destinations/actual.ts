@@ -62,13 +62,15 @@ export class ActualClient {
       transactionsByAccount[t.accountId].push(t);
     });
 
-    return Promise.all(
-      Object.entries(transactionsByAccount).map(([accountId, ts], _) =>
-        Actual.importTransactions(
-          accountId,
-          ts.map((t) => mapTransaction(t, this.noteSuffix || "")),
-        ),
-      ),
-    );
+    const results: ImportTransactionResult[] = [];
+    for (const [accountId, ts] of Object.entries(transactionsByAccount)) {
+      await Actual.downloadBudget(this.syncId); // https://github.com/actualbudget/actual/issues/1120
+      const result = await Actual.importTransactions(
+        accountId,
+        ts.map((t) => mapTransaction(t, this.noteSuffix || "")),
+      );
+      results.push(result);
+    }
+    return results;
   }
 }
