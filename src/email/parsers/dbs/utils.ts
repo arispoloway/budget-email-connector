@@ -27,12 +27,31 @@ export class TableParser {
   }
 }
 
+// Map symbol-based currency prefixes to ISO codes
+const CURRENCY_SYMBOL_MAP: Record<string, string> = {
+  S$: "SGD",
+  $: "USD",
+};
+
 export function parseCurrencyAmount(
   input: string,
 ): { currency: string; amount: Decimal } | null {
+  let trimmed = input.trim();
+
+  // Check for symbol-based currency prefixes (e.g. "S$8.00", "$100")
+  for (const [symbol, code] of Object.entries(CURRENCY_SYMBOL_MAP)) {
+    if (trimmed.startsWith(symbol)) {
+      const rest = trimmed.slice(symbol.length);
+      const amountMatch = rest.match(/^\s*([0-9]+(?:\.[0-9]+)?)/);
+      if (amountMatch) {
+        return { currency: code, amount: new Decimal(amountMatch[1]) };
+      }
+    }
+  }
+
   // match currency (letters) and amount (number with optional decimals)
   const regex = /([A-Za-z]+)?\s*([0-9]+(?:\.[0-9]+)?)\s*([A-Za-z]+)?/;
-  const match = input.trim().match(regex);
+  const match = trimmed.match(regex);
 
   if (!match) return null;
 
@@ -116,12 +135,10 @@ function tryParse(
   return null;
 }
 
-export function extractStrongField(
-  html: string,
-  field: "From" | "To",
-): string | null {
+export function extractStrongField(html: string, field: string): string | null {
+  const escapedField = field.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const regex = new RegExp(
-    `<strong>\\s*${field}:\\s*</strong>\\s*([^<]+)`,
+    `<strong>\\s*${escapedField}:\\s*</strong>\\s*([^<]+)`,
     "i",
   );
   const match = html.match(regex);

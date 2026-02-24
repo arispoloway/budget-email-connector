@@ -180,6 +180,49 @@ export class DBSTransactionParser {
     ]);
   }
 
+  private parseNETSScanPayTransaction(email: Email): TransactionParseResult {
+    const body = email.body;
+
+    const dateTimeStr = extractStrongField(body, "Date & Time");
+    if (!dateTimeStr)
+      return parseError("Could not identify 'date' field from email");
+    const date = parseDate(dateTimeStr);
+    if (!date) return parseError(`Could not parse date from '${dateTimeStr}'`);
+
+    const amountStr = extractStrongField(body, "Amount");
+    if (!amountStr)
+      return parseError("Could not identify 'amount' field from email");
+    const amount = parseCurrencyAmount(amountStr)?.amount;
+    if (!amount)
+      return parseError(`Could not parse amount from '${amountStr}'`);
+
+    const from = extractStrongField(body, "From");
+    if (!from) return parseError("Could not identify 'from' field from email");
+
+    const to = extractStrongField(body, "To");
+    if (!to) return parseError("Could not identify 'to' field from email");
+
+    let noteItems: string[] = [`NETS Scan & Pay from ${from}`];
+
+    const originalTransactionId = parseTransactionId(email.body);
+    if (originalTransactionId)
+      noteItems.push(`Transaction ID: ${originalTransactionId}`);
+    if (email.link) noteItems.push(`Link: ${email.link}`);
+
+    const notes = noteItems.join("\n");
+
+    return parseSuccess([
+      {
+        accountId: this.accountId,
+        importId: email.id,
+        date: date,
+        amount: amount.mul(-1),
+        payee: to,
+        notes: notes,
+      },
+    ]);
+  }
+
   parseTransactionEmail(email: Email): TransactionParseResult {
     if (
       email.subject === "Transaction Alerts" &&
@@ -200,6 +243,10 @@ export class DBSTransactionParser {
       return this.parseReceivedTransaction(email);
     } else if (email.subject === "Card Transaction Alert") {
       return this.parseCardTransaction(email);
+    } else if (
+      email.subject === "digibank Alert - Successful NETS Scan & Pay"
+    ) {
+      return this.parseNETSScanPayTransaction(email);
     } else {
       return parseSkipped("Email did not appear to be a transaction email");
     }
