@@ -86,6 +86,56 @@ To: ${to}  </p>
 </body>
 </html>`;
 
+// Helper function to create NETS Scan & Pay transaction HTML
+const createNETSScanPayHTML = (
+  dateTime: string,
+  amount: string,
+  from: string,
+  to: string,
+  transactionId?: string,
+) => `
+<html>
+<body>
+<tr>
+  <td style="background-color: #ffffff;"><table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+      <tr>
+        <td class="col-mob" style="padding: 30px 30px 15px; font-size: 15px; line-height: 20px; font-family: Arial, sans-serif; color: #000000; text-align: left;"><p style="margin: 0 0 15px">
+		${transactionId ? `Transaction Ref: ${transactionId}<br /><br /><br />` : ""}
+		Dear Customer,<br /><br />
+		Your NETS Scan & Pay transaction on 24 Feb 18:38 SGT was successful.<br />
+
+		<table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color:#FFFFFF; ">
+        <tbody>
+		<tr>
+          <td style="border-right:solid 2px #ffffff; border-bottom:solid 2px #ffffff;"><strong>Date & Time: </strong>${dateTime}</td>
+        </tr>
+
+		<tr>
+          <td style="border-right:solid 2px #ffffff; border-bottom:solid 2px #ffffff; "><strong>Amount: </strong>${amount}</td>
+        </tr>
+
+		<tr>
+          <td style="border-right:solid 2px #ffffff; border-bottom:solid 2px #ffffff; "><strong>From: </strong>${from}</td>
+        </tr>
+		<tr>
+          <td style="border-right:solid 2px #ffffff; border-bottom:solid 2px #ffffff; "><strong>To: </strong>${to} </td>
+        </tr>
+
+		</tbody>
+	</table>
+<br />
+ If unauthorised, call DBS hotline. To view transaction, please login to Digibank.
+  <br /><br />
+		Thank you for banking with us.<br /><br />
+		Yours faithfully<br />
+DBS Bank Ltd
+ </p></td>
+      </tr>
+    </table></td>
+</tr>
+</body>
+</html>`;
+
 const EXPECTATIONS: ParseTest[] = [
   {
     name: "irrelevant email is skipped",
@@ -580,6 +630,108 @@ const EXPECTATIONS: ParseTest[] = [
         amount: new Decimal(0.01),
         payee: "Sam Wilson",
         notes: "PayNow Received from Sam Wilson to Tony Stark",
+      },
+    ]),
+  },
+  // NETS Scan & Pay tests
+  {
+    name: "NETS scan & pay transaction parses properly",
+    email: {
+      id: emailId,
+      from: "noreply@dbs.com",
+      subject: "digibank Alert - Successful NETS Scan & Pay",
+      body: createNETSScanPayHTML(
+        "24 Feb 2025 18:38 SGT",
+        "S$8.00",
+        "DBS/POSB Account ending 4343",
+        "JOO CHIAT BEEF NOODLE",
+        "4873947234987",
+      ),
+    },
+    expected: parseSuccess([
+      {
+        accountId: accountId,
+        importId: emailId,
+        date: new Date("2025-02-24T18:38:00+08:00"),
+        amount: new Decimal(-8.0),
+        payee: "JOO CHIAT BEEF NOODLE",
+        notes:
+          "NETS Scan & Pay from DBS/POSB Account ending 4343\nTransaction ID: 4873947234987",
+      },
+    ]),
+  },
+  {
+    name: "NETS scan & pay transaction without transaction ID",
+    email: {
+      id: emailId,
+      from: "noreply@dbs.com",
+      subject: "digibank Alert - Successful NETS Scan & Pay",
+      body: createNETSScanPayHTML(
+        "15 Mar 2025 09:15 SGT",
+        "S$25.50",
+        "DBS/POSB Account ending 1234",
+        "FAIRPRICE FINEST",
+      ),
+    },
+    expected: parseSuccess([
+      {
+        accountId: accountId,
+        importId: emailId,
+        date: new Date("2025-03-15T09:15:00+08:00"),
+        amount: new Decimal(-25.5),
+        payee: "FAIRPRICE FINEST",
+        notes: "NETS Scan & Pay from DBS/POSB Account ending 1234",
+      },
+    ]),
+  },
+  {
+    name: "NETS scan & pay transaction with link",
+    email: {
+      id: emailId,
+      from: "noreply@dbs.com",
+      subject: "digibank Alert - Successful NETS Scan & Pay",
+      body: createNETSScanPayHTML(
+        "10 Jan 2025 12:00 SGT",
+        "S$42.80",
+        "DBS/POSB Account ending 5678",
+        "GRAB FOOD",
+        "9876543210123",
+      ),
+      link: "https://dbs.com/nets/123",
+    },
+    expected: parseSuccess([
+      {
+        accountId: accountId,
+        importId: emailId,
+        date: new Date("2025-01-10T12:00:00+08:00"),
+        amount: new Decimal(-42.8),
+        payee: "GRAB FOOD",
+        notes:
+          "NETS Scan & Pay from DBS/POSB Account ending 5678\nTransaction ID: 9876543210123\nLink: https://dbs.com/nets/123",
+      },
+    ]),
+  },
+  {
+    name: "NETS scan & pay transaction with SGD amount format",
+    email: {
+      id: emailId,
+      from: "noreply@dbs.com",
+      subject: "digibank Alert - Successful NETS Scan & Pay",
+      body: createNETSScanPayHTML(
+        "20 Apr 2025 14:30 SGT",
+        "SGD 15.00",
+        "DBS/POSB Account ending 9999",
+        "STARBUCKS",
+      ),
+    },
+    expected: parseSuccess([
+      {
+        accountId: accountId,
+        importId: emailId,
+        date: new Date("2025-04-20T14:30:00+08:00"),
+        amount: new Decimal(-15.0),
+        payee: "STARBUCKS",
+        notes: "NETS Scan & Pay from DBS/POSB Account ending 9999",
       },
     ]),
   },
