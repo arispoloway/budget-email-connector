@@ -1,11 +1,8 @@
-import { InitConfig } from "@actual-app/api/@types/loot-core/src/server/main";
 import type { Transaction } from "../email/parsers/parser";
 import * as Actual from "@actual-app/api";
-import { ImportTransactionEntity } from "@actual-app/api/@types/loot-core/src/types/models";
-import { ReconcileTransactionsResult } from "@actual-app/api/@types/loot-core/src/server/accounts/sync";
+import type { ImportTransactionEntity, InitConfig } from "@actual-app/api";
 import { ImportTransactionResult } from "./destination";
 import { promises as fs } from "fs";
-import Decimal from "decimal.js";
 
 function mapTransaction(
   transaction: Transaction,
@@ -65,10 +62,10 @@ export class ActualClient {
     const results: ImportTransactionResult[] = [];
     for (const [accountId, ts] of Object.entries(transactionsByAccount)) {
       await Actual.downloadBudget(this.syncId); // https://github.com/actualbudget/actual/issues/1120
-      const result = await Actual.importTransactions(
+      const result = (await Actual.importTransactions(
         accountId,
         ts.map((t) => mapTransaction(t, this.noteSuffix || "")),
-      );
+      )) as ImportTransactionResult;
       results.push(result);
     }
     return results;
