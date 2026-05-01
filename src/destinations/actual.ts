@@ -1,5 +1,5 @@
 import type { Transaction } from "../email/parsers/parser";
-import Actual from "@actual-app/api";
+import * as Actual from "@actual-app/api";
 import type { ImportTransactionEntity, InitConfig } from "@actual-app/api";
 import { ImportTransactionResult } from "./destination";
 import { promises as fs } from "fs";
