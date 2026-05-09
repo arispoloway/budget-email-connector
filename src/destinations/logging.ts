@@ -1,5 +1,5 @@
-import type { Transaction } from "../email/parsers/parser";
-import { Destination, ImportTransactionResult } from "./destination";
+import type { Transaction } from "../email/parsers/parser.js";
+import { Destination, ImportTransactionResult } from "./destination.js";
 
 function formatTransaction(transaction: Transaction): string {
   const sign = transaction.amount.isNegative() ? "" : "+";

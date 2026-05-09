@@ -1,7 +1,7 @@
 import { google } from "googleapis";
-import { EmailStore } from "../../store";
-import { Email } from "../types";
-import { GmailConfig } from "../config";
+import { EmailStore } from "../../store.js";
+import { Email } from "../types.js";
+import { GmailConfig } from "../config.js";
 import { promises as fs } from "fs";
 import path from "path";
 import readline from "readline";

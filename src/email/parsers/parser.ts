@@ -1,5 +1,5 @@
-import Decimal from "decimal.js";
-import { Email } from "../clients/types";
+import { Decimal } from "decimal.js";
+import { Email } from "../clients/types.js";
 
 export interface Transaction {
   accountId: string;

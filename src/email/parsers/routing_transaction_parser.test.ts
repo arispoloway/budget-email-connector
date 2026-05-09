@@ -1,8 +1,8 @@
 import { expect, test, describe } from "vitest";
-import { Email } from "../clients/types";
-import { parseError, parseSuccess, TransactionParser } from "./parser";
-import { RoutingTransactionParser } from "./routing_transaction_parser";
-import Decimal from "decimal.js";
+import { Email } from "../clients/types.js";
+import { parseError, parseSuccess, TransactionParser } from "./parser.js";
+import { RoutingTransactionParser } from "./routing_transaction_parser.js";
+import { Decimal } from "decimal.js";
 
 describe("RoutingTransactionParser", () => {
   test("routes email to correct parser when email address matches", () => {

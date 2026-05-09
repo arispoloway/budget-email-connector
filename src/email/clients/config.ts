@@ -1,6 +1,6 @@
-import { GmailClient } from "./gmail/client";
-import { ImapClient } from "./imap/client";
-import { EmailClient } from "./types";
+import { GmailClient } from "./gmail/client.js";
+import { ImapClient } from "./imap/client.js";
+import { EmailClient } from "./types.js";
 import { Logger } from "imapflow";
 
 export type EmailClientConfig = GmailConfig | ImapConfig;

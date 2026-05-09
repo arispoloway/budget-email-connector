@@ -1,11 +1,11 @@
 import { expect, test, describe, beforeEach, vi } from "vitest";
-import { parseConfig, parseConfigFromFile, Config } from "./config";
+import { parseConfig, parseConfigFromFile, Config } from "./config.js";
 import { promises as fs } from "fs";
-import { EmailStore } from "./email/store";
-import { GmailClient } from "./email/clients/gmail/client";
-import { ActualClient } from "./destinations/actual";
-import { DBSTransactionParser } from "./email/parsers/dbs/dbs";
-import { DiscordNotifier } from "./notifiers/discord";
+import { EmailStore } from "./email/store.js";
+import { GmailClient } from "./email/clients/gmail/client.js";
+import { ActualClient } from "./destinations/actual.js";
+import { DBSTransactionParser } from "./email/parsers/dbs/dbs.js";
+import { DiscordNotifier } from "./notifiers/discord.js";
 
 describe("parseConfig", () => {
   test("parses valid config successfully", () => {

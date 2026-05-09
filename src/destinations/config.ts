@@ -1,6 +1,6 @@
-import { ActualClient } from "./actual";
-import { Destination } from "./destination";
-import { LoggingDestination } from "./logging";
+import { ActualClient } from "./actual.js";
+import { Destination } from "./destination.js";
+import { LoggingDestination } from "./logging.js";
 
 export type DestinationConfig =
   | ActualBudgetDestinationConfig

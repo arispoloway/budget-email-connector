@@ -1,5 +1,5 @@
 import { expect, test, beforeEach, describe } from "vitest";
-import { EmailStore } from "./store";
+import { EmailStore } from "./store.js";
 
 describe("EmailStore", () => {
   let store: EmailStore;

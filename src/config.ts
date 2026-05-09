@@ -1,18 +1,24 @@
 import {
   createDestinationFromConfig,
   DestinationConfig,
-} from "./destinations/config";
-import { Destination } from "./destinations/destination";
+} from "./destinations/config.js";
+import { Destination } from "./destinations/destination.js";
 import {
   createEmailClientFromConfig,
   EmailClientConfig,
-} from "./email/clients/config";
-import { EmailClient } from "./email/clients/types";
-import { createParserFromConfig, ParserConfig } from "./email/parsers/config";
-import { TransactionParser } from "./email/parsers/parser";
-import { EmailStore } from "./email/store";
-import { createNotifierFromConfig, NotifierConfig } from "./notifiers/config";
-import { Notifier } from "./notifiers/notifier";
+} from "./email/clients/config.js";
+import { EmailClient } from "./email/clients/types.js";
+import {
+  createParserFromConfig,
+  ParserConfig,
+} from "./email/parsers/config.js";
+import { TransactionParser } from "./email/parsers/parser.js";
+import { EmailStore } from "./email/store.js";
+import {
+  createNotifierFromConfig,
+  NotifierConfig,
+} from "./notifiers/config.js";
+import { Notifier } from "./notifiers/notifier.js";
 import { promises as fs } from "fs";
 
 export type ParsedConfig = {

@@ -1,10 +1,10 @@
 import "dotenv/config";
-import { parseConfigFromFile } from "./config";
-import { Runner } from "./runner";
+import { parseConfigFromFile } from "./config.js";
+import { Runner } from "./runner.js";
 
 async function main() {
   // TODO: specify config location, also better config validation and errors
-  const config = await parseConfigFromFile("./config.json");
+  const config = await parseConfigFromFile("config.json");
 
   const runner = new Runner(config);
   await runner.init();

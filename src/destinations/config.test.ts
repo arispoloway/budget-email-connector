@@ -4,9 +4,9 @@ import {
   ActualBudgetDestinationConfig,
   LoggingDestinationConfig,
   DestinationConfig,
-} from "./config";
-import { ActualClient } from "./actual";
-import { LoggingDestination } from "./logging";
+} from "./config.js";
+import { ActualClient } from "./actual.js";
+import { LoggingDestination } from "./logging.js";
 
 describe("createDestinationFromConfig", () => {
   test("creates ActualBudget destination from config", () => {

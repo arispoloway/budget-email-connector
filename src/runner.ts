@@ -1,9 +1,9 @@
-import { ParsedConfig } from "./config";
-import { Destination } from "./destinations/destination";
-import { Email, EmailClient } from "./email/clients/types";
-import { ParseResult, TransactionParser } from "./email/parsers/parser";
-import { EmailStore } from "./email/store";
-import { Notifier } from "./notifiers/notifier";
+import { ParsedConfig } from "./config.js";
+import { Destination } from "./destinations/destination.js";
+import { Email, EmailClient } from "./email/clients/types.js";
+import { ParseResult, TransactionParser } from "./email/parsers/parser.js";
+import { EmailStore } from "./email/store.js";
+import { Notifier } from "./notifiers/notifier.js";
 
 function timeout(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));

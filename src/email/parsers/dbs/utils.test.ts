@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
-import { parseDate } from "./utils";
+import { parseDate } from "./utils.js";
 
 describe("parseDate", () => {
   beforeEach(() => {

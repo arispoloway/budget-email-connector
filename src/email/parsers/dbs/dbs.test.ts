@@ -1,13 +1,13 @@
 import { expect, test } from "vitest";
-import { Email } from "../../clients/types";
+import { Email } from "../../clients/types.js";
 import {
   parseSkipped,
   parseSuccess,
   parseError,
   TransactionParseResult,
-} from "../parser";
-import { DBSTransactionParser } from "./dbs";
-import Decimal from "decimal.js";
+} from "../parser.js";
+import { DBSTransactionParser } from "./dbs.js";
+import { Decimal } from "decimal.js";
 
 type ParseTest = {
   name: string;

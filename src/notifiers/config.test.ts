@@ -3,8 +3,8 @@ import {
   createNotifierFromConfig,
   DiscordNotifierConfig,
   NotifierConfig,
-} from "./config";
-import { DiscordNotifier } from "./discord";
+} from "./config.js";
+import { DiscordNotifier } from "./discord.js";
 
 describe("createNotifierFromConfig", () => {
   test("creates Discord notifier from config", () => {

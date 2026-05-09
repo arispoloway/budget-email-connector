@@ -1,7 +1,7 @@
-import Decimal from "decimal.js";
-import { Email } from "../email/clients/types";
-import { Transaction } from "../email/parsers/parser";
-import { Notifier } from "./notifier";
+import { Decimal } from "decimal.js";
+import { Email } from "../email/clients/types.js";
+import { Transaction } from "../email/parsers/parser.js";
+import { Notifier } from "./notifier.js";
 
 interface DiscordEmbed {
   title?: string;

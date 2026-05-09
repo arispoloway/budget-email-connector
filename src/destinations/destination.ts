@@ -1,5 +1,5 @@
 import { init } from "@actual-app/api";
-import { Transaction } from "../email/parsers/parser";
+import { Transaction } from "../email/parsers/parser.js";
 
 export type ImportTransactionResult = {};
 
