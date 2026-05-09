@@ -1,4 +1,4 @@
-import { EmailStore } from "../store";
+import { EmailStore } from "../store.js";
 
 export type Email = {
   id: string;

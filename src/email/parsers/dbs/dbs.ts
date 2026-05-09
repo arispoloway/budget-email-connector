@@ -1,18 +1,18 @@
-import { Email } from "../../clients/types";
+import { Email } from "../../clients/types.js";
 import {
   parseError,
   ParseResult,
   parseSkipped,
   parseSuccess,
   TransactionParseResult,
-} from "../parser";
+} from "../parser.js";
 import {
   extractStrongField,
   parseCurrencyAmount,
   parseDate,
   parseTransactionId,
   TableParser,
-} from "./utils";
+} from "./utils.js";
 
 export class DBSTransactionParser {
   private accountId: string;

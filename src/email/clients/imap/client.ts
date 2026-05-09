@@ -1,7 +1,7 @@
 import { ImapFlow, FetchMessageObject } from "imapflow";
-import { EmailStore } from "../../store";
-import { Email, EmailClient } from "../types";
-import { ImapConfig } from "../config";
+import { EmailStore } from "../../store.js";
+import { Email, EmailClient } from "../types.js";
+import { ImapConfig } from "../config.js";
 import { simpleParser, ParsedMail } from "mailparser";
 
 function extractEmail(fromHeader: string): string {

@@ -1,5 +1,5 @@
-import { Email } from "../email/clients/types";
-import { Transaction } from "../email/parsers/parser";
+import { Email } from "../email/clients/types.js";
+import { Transaction } from "../email/parsers/parser.js";
 
 export interface Notifier {
   notifyTransactionsImported(

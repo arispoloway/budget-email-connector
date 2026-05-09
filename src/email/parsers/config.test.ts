@@ -4,9 +4,9 @@ import {
   DBSParserConfig,
   ParserConfig,
   RoutingParserConfig,
-} from "./config";
-import { DBSTransactionParser } from "./dbs/dbs";
-import { RoutingTransactionParser } from "./routing_transaction_parser";
+} from "./config.js";
+import { DBSTransactionParser } from "./dbs/dbs.js";
+import { RoutingTransactionParser } from "./routing_transaction_parser.js";
 
 describe("createParserFromConfig", () => {
   test("creates DBS parser from config", () => {

@@ -1,6 +1,6 @@
-import { DBSTransactionParser } from "./dbs/dbs";
-import { TransactionParser } from "./parser";
-import { RoutingTransactionParser } from "./routing_transaction_parser";
+import { DBSTransactionParser } from "./dbs/dbs.js";
+import { TransactionParser } from "./parser.js";
+import { RoutingTransactionParser } from "./routing_transaction_parser.js";
 
 // config.ts
 export type ParserConfig = DBSParserConfig | RoutingParserConfig;

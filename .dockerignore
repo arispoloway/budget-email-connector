@@ -5,3 +5,6 @@ token.json
 emails.sqlite
 config.json
 tmp/
+.git/
+.jj/
+.claude/

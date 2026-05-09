@@ -1,8 +1,8 @@
 import { expect, test, describe, beforeEach, vi } from "vitest";
-import { DiscordNotifier } from "./discord";
-import { Email } from "../email/clients/types";
-import { Transaction } from "../email/parsers/parser";
-import Decimal from "decimal.js";
+import { DiscordNotifier } from "./discord.js";
+import { Email } from "../email/clients/types.js";
+import { Transaction } from "../email/parsers/parser.js";
+import { Decimal } from "decimal.js";
 
 // Mock fetch globally
 const mockFetch = vi.fn();

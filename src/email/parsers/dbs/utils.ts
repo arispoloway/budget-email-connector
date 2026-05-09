@@ -1,5 +1,5 @@
 import * as cheerio from "cheerio";
-import Decimal from "decimal.js";
+import { Decimal } from "decimal.js";
 import { DateTime } from "luxon";
 
 export class TableParser {

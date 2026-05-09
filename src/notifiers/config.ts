@@ -1,5 +1,5 @@
-import { DiscordNotifier } from "./discord";
-import { Notifier } from "./notifier";
+import { DiscordNotifier } from "./discord.js";
+import { Notifier } from "./notifier.js";
 
 export type NotifierConfig = DiscordNotifierConfig;
 

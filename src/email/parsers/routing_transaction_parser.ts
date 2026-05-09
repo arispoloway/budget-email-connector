@@ -1,9 +1,9 @@
-import { Email } from "../clients/types";
+import { Email } from "../clients/types.js";
 import {
   parseError,
   TransactionParser,
   TransactionParseResult,
-} from "./parser";
+} from "./parser.js";
 
 export class RoutingTransactionParser {
   private mapping: { [key: string]: TransactionParser };

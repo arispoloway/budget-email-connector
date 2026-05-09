@@ -4,9 +4,9 @@ import {
   EmailClientConfig,
   GmailConfig,
   ImapConfig,
-} from "./config";
-import { GmailClient } from "./gmail/client";
-import { ImapClient } from "./imap/client";
+} from "./config.js";
+import { GmailClient } from "./gmail/client.js";
+import { ImapClient } from "./imap/client.js";
 
 describe("createEmailClientFromConfig", () => {
   test("creates Gmail client from config", () => {
