@@ -136,6 +136,38 @@ DBS Bank Ltd
 </body>
 </html>`;
 
+// Helper function to create PayLah refund transaction HTML
+const createPayLahRefundHTML = (
+  dateTime: string,
+  amount: string,
+  from: string,
+  to: string,
+  transactionId?: string,
+) => `
+<html>
+<body>
+<tr>
+  <td style="background-color: #ffffff;"><table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+      <tbody>
+        <tr>
+          <td class="col-mob" style="padding: 30px 30px 15px; font-size: 15px; line-height: 20px; font-family: Arial, sans-serif; color: #000000; text-align: left;">
+            ${transactionId ? `<p style="margin: 0 0 15px;">Transaction Ref: ${transactionId}</p>` : ""}
+            <p style="margin: 0 0 15px;">Dear Sir/Madam, </p>
+            <p style="margin: 0 0 15px;">We refer to your PayLah! refund transaction below and are pleased to confirm that the transaction was completed.</p>
+            <p style="margin: 0 0 15px;">Date &amp; Time: ${dateTime}
+<br>Amount: ${amount}
+<br>From: ${from}
+<br>To: ${to}</p>
+            <p style="margin: 0 0 30px;">Thank you for banking with us.</p>
+            <p style="margin: 0 0 30px;">Yours Faithfully,<br>DBS Bank Ltd </p>
+          </td>
+        </tr>
+      </tbody>
+    </table></td>
+</tr>
+</body>
+</html>`;
+
 const EXPECTATIONS: ParseTest[] = [
   {
     name: "irrelevant email is skipped",
@@ -632,6 +664,126 @@ const EXPECTATIONS: ParseTest[] = [
         notes: "PayNow Received from Sam Wilson to Tony Stark",
       },
     ]),
+  },
+  // PayLah refund tests
+  {
+    name: "paylah refund transaction parses properly",
+    email: {
+      id: emailId,
+      from: "paylah.alert@dbs.com",
+      subject: "Transaction Alert",
+      body: createPayLahRefundHTML(
+        "14 Mar 15:45 (SGT)",
+        "SGD 12.50",
+        "SHOPEE SINGAPORE",
+        "PayLah! Wallet (Mobile ending 8821)",
+        "260314154502MC099123",
+      ),
+    },
+    expected: parseSuccess([
+      {
+        accountId: accountId,
+        importId: emailId,
+        date: new Date("2026-03-14T15:45:00+08:00"),
+        amount: new Decimal(12.5),
+        payee: "SHOPEE SINGAPORE",
+        notes:
+          "PayLah Refund from SHOPEE SINGAPORE\nTransaction ID: 260314154502MC099123",
+      },
+    ]),
+  },
+  {
+    name: "paylah refund with no-space date format",
+    email: {
+      id: emailId,
+      from: "paylah.alert@dbs.com",
+      subject: "Transaction Alert",
+      body: createPayLahRefundHTML(
+        "07 Jun15:29 (SGT)",
+        "SGD 0.70",
+        "GRAB SINGAPORE",
+        "PayLah! Wallet (Mobile ending 3312)",
+        "260607152905MC036999",
+      ),
+    },
+    expected: parseSuccess([
+      {
+        accountId: accountId,
+        importId: emailId,
+        date: new Date("2026-06-07T15:29:00+08:00"),
+        amount: new Decimal(0.7),
+        payee: "GRAB SINGAPORE",
+        notes:
+          "PayLah Refund from GRAB SINGAPORE\nTransaction ID: 260607152905MC036999",
+      },
+    ]),
+  },
+  {
+    name: "paylah refund without transaction ID",
+    email: {
+      id: emailId,
+      from: "paylah.alert@dbs.com",
+      subject: "Transaction Alert",
+      body: createPayLahRefundHTML(
+        "20 Jan 09:00 (SGT)",
+        "SGD 5.00",
+        "LAZADA SINGAPORE",
+        "PayLah! Wallet (Mobile ending 4401)",
+      ),
+    },
+    expected: parseSuccess([
+      {
+        accountId: accountId,
+        importId: emailId,
+        date: new Date("2026-01-20T09:00:00+08:00"),
+        amount: new Decimal(5.0),
+        payee: "LAZADA SINGAPORE",
+        notes: "PayLah Refund from LAZADA SINGAPORE",
+      },
+    ]),
+  },
+  {
+    name: "paylah refund with link",
+    email: {
+      id: emailId,
+      from: "paylah.alert@dbs.com",
+      subject: "Transaction Alert",
+      body: createPayLahRefundHTML(
+        "01 Feb 11:30 (SGT)",
+        "SGD 25.00",
+        "REDMART LTD",
+        "PayLah! Wallet (Mobile ending 7753)",
+        "260201113011MC045678",
+      ),
+      link: "https://dbs.com/refund/abc",
+    },
+    expected: parseSuccess([
+      {
+        accountId: accountId,
+        importId: emailId,
+        date: new Date("2026-02-01T11:30:00+08:00"),
+        amount: new Decimal(25.0),
+        payee: "REDMART LTD",
+        notes:
+          "PayLah Refund from REDMART LTD\nTransaction ID: 260201113011MC045678\nLink: https://dbs.com/refund/abc",
+      },
+    ]),
+  },
+  {
+    name: "paylah refund email with wrong subject is skipped",
+    email: {
+      id: emailId,
+      from: "paylah.alert@dbs.com",
+      subject: "Transaction Alerts",
+      body: createPayLahRefundHTML(
+        "07 Jun 15:29 (SGT)",
+        "SGD 3.00",
+        "SOME MERCHANT",
+        "PayLah! Wallet (Mobile ending 1234)",
+      ),
+    },
+    // "Transaction Alerts" routes to parseSentTransaction, not refund — ensure no confusion
+    expected: parseError("Could not identify 'to' field from email"),
   },
   // NETS Scan & Pay tests
   {
