@@ -89,7 +89,8 @@ export function parseDate(input: string, now: Date = new Date()): Date | null {
   let normalized = input
     .trim()
     .replace(/\s+/g, " ")
-    .replace(/\(([^)]+)\)/, "$1"); // (UTC) -> UTC
+    .replace(/\(([^)]+)\)/, "$1") // (UTC) -> UTC
+    .replace(/([A-Za-z]{3})(\d{1,2}:\d{2})/, "$1 $2"); // "Jun15:29" -> "Jun 15:29"
 
   // Extract zone
   const parts = normalized.split(" ");
