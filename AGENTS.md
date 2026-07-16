@@ -20,7 +20,7 @@ src/
 ├── email/
 │   ├── store.ts      # SQLite store for processed emails
 │   ├── clients/      # Email provider integrations (IMAP preferred, Gmail legacy)
-│   └── parsers/      # Email → Transaction parsers (DBS)
+│   └── parsers/      # Email → Transaction parsers (DBS, HSBC)
 ├── destinations/     # Finance app integrations (ActualBudget, Logging)
 └── notifiers/        # Notification integrations (Discord)
 ```

@@ -2,10 +2,12 @@ import { expect, test, describe } from "vitest";
 import {
   createParserFromConfig,
   DBSParserConfig,
+  HSBCParserConfig,
   ParserConfig,
   RoutingParserConfig,
 } from "./config.js";
 import { DBSTransactionParser } from "./dbs/dbs.js";
+import { HSBCTransactionParser } from "./hsbc/hsbc.js";
 import { RoutingTransactionParser } from "./routing_transaction_parser.js";
 
 describe("createParserFromConfig", () => {
@@ -30,6 +32,16 @@ describe("createParserFromConfig", () => {
 
     const parser = createParserFromConfig(config);
     expect(parser).toBeInstanceOf(DBSTransactionParser);
+  });
+
+  test("creates HSBC parser from config", () => {
+    const config: HSBCParserConfig = {
+      type: "hsbc",
+      accountId: "test-account-id",
+    };
+
+    const parser = createParserFromConfig(config);
+    expect(parser).toBeInstanceOf(HSBCTransactionParser);
   });
 
   test("creates routing parser from config", () => {

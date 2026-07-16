@@ -25,6 +25,16 @@
             "5678": "<CARD_ACCOUNT_ID_2>"
           }
         }
+      },
+      {
+        "emails": ["HSBC.Bank.Singapore.Limited@notification.hsbc.com.hk"],
+        "parser": {
+          "type": "hsbc",
+          "accountId": "<FILL ME IN>",
+          "cardNumberMapping": {
+            "1234": "<HSBC_CARD_ACCOUNT_ID>"
+          }
+        }
       }
     ]
   },
