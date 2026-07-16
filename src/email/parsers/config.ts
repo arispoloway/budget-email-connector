@@ -1,9 +1,13 @@
 import { DBSTransactionParser } from "./dbs/dbs.js";
+import { HSBCTransactionParser } from "./hsbc/hsbc.js";
 import { TransactionParser } from "./parser.js";
 import { RoutingTransactionParser } from "./routing_transaction_parser.js";
 
 // config.ts
-export type ParserConfig = DBSParserConfig | RoutingParserConfig;
+export type ParserConfig =
+  | DBSParserConfig
+  | HSBCParserConfig
+  | RoutingParserConfig;
 
 export interface DBSParserConfig {
   type: "dbs";
@@ -13,6 +17,19 @@ export interface DBSParserConfig {
    * For card transactions, if the last 4 digits (as they appear in the email's "From" field,
    * e.g., "DBS/POSB card ending 1234") match a key in this mapping, the transaction will
    * be assigned to the mapped account ID instead of the default accountId.
+   * Example: { "1234": "card-account-id", "5678": "another-card-account-id" }
+   */
+  cardNumberMapping?: Record<string, string>;
+}
+
+export interface HSBCParserConfig {
+  type: "hsbc";
+  accountId: string;
+  /**
+   * Optional mapping from card number last 4 digits to account IDs.
+   * For card transactions, if the last 4 digits (as they appear in the email's
+   * "Card Number" field, e.g., "XXXX-XXXX-XXXX-1234") match a key in this mapping,
+   * the transaction will be assigned to the mapped account ID instead of the default accountId.
    * Example: { "1234": "card-account-id", "5678": "another-card-account-id" }
    */
   cardNumberMapping?: Record<string, string>;
@@ -35,6 +52,14 @@ export function createParserFromConfig(
       return new DBSTransactionParser(
         dbsConfig.accountId,
         dbsConfig.cardNumberMapping,
+      );
+    }
+
+    case "hsbc": {
+      const hsbcConfig = config as HSBCParserConfig;
+      return new HSBCTransactionParser(
+        hsbcConfig.accountId,
+        hsbcConfig.cardNumberMapping,
       );
     }
 
