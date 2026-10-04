@@ -220,7 +220,7 @@ const EXPECTATIONS: ParseTest[] = [
       {
         accountId: accountId,
         importId: emailId,
-        date: new Date("2025-09-26T20:03:00+08:00"),
+        date: new Date("2026-09-26T20:03:00+08:00"),
         amount: new Decimal(-250.0),
         payee: "Alice Johnson",
         notes: "PayNow/FAST Sent from Bob Wilson to Alice Johnson",
